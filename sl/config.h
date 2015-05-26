@@ -71,7 +71,7 @@
 /**
  * if 1, plot shape of the data structures being leaked
  */
-#define DEBUG_SYMGC                         0
+#define DEBUG_SYMGC                         1
 
 /**
  * if 1, symjoin prints some extra debugging info
@@ -193,13 +193,13 @@
  * - 1 ... dump a single trace graph for all errors/warnings (may be huge)
  * - 2 ... dump a single trace graph for each error/warning
  */
-#define SE_DUMP_TRACE_GRAPHS                0
+#define SE_DUMP_TRACE_GRAPHS                2
 
 /**
  * - 0 ... kill local variables only on stack frame destruction
  * - 1 ... kill local variables as soon as they become dead
  */
-#define SE_EARLY_VARS_DESTRUCTION           1
+#define SE_EARLY_VARS_DESTRUCTION           0
 
 /**
  * - 0 ... call cache completely disabled (saves a lot of memory)
@@ -242,7 +242,7 @@
 /**
  * if non-zero, plot each state that caused an error to be reported
  */
-#define SE_PLOT_ERROR_STATES                0
+#define SE_PLOT_ERROR_STATES                1
 
 /**
  * preserve heaps with different DLS minimum lengths up to the specified number

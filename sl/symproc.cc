@@ -84,6 +84,12 @@ void SymProc::printBackTrace(EMsgLevel level, bool forcePtrace)
     glProxy->insert(sh_.traceNode(), "symtrace");
 #endif
 
+		//BEGIN DREW
+		#if SE_PLOT_ERROR_STATES
+				plotHeap(sh_, "trace-state", lw_);
+		#endif
+		//END DREW
+
     if (ML_ERROR != level)
         // do not panic for now
         return;
