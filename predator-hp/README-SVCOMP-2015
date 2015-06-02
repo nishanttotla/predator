@@ -1,0 +1,21 @@
+Instructions for SV-COMP'15
+===========================
+
+(0) Install the dependencies (please note: we use GCC 4.6):
+
+  # apt-get install cmake g++ gcc-4.6-multilib gcc-4.6-plugin-dev libboost-dev make
+
+(1) Build PredatorHP. In the 'predator-hp' directory, run the following script:
+
+  $ ./svcomp2015-build.sh
+
+(2) Use the 'predatorHP.py' script to verify each single test-case. The script
+    needs to be run from the 'predator-hp' directory.
+
+  $ ./predatorHP.py --propertyfile PROPERTYFILE --witness WITNESS VERIFICATION_TASK
+
+    PROPERTYFILE:      Path to a file containing the property to be verified
+                       (in SV-COMP LTL specification)
+    WITNESS:           Path to a writable file, where the witness will be
+                       written if a property violation is found
+    VERIFICATION_TASK: Path to a preprocessed C program to be verified

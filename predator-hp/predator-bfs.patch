@@ -1,0 +1,921 @@
+diff --git a/sl/check-property.sh.in b/sl/check-property.sh.in
+index d28b483..0367bac 100755
+--- a/sl/check-property.sh.in
++++ b/sl/check-property.sh.in
+@@ -3,8 +3,9 @@ export SELF="$0"
+ export LC_ALL=C
+ export CCACHE_DISABLE=1
+ 
+-export MSG_INFLOOP=': warning: end of function .*() has not been reached'
++export MSG_INFLOOP=': warning: end of function .*\(\) has not been reached'
+ export MSG_LABEL_FOUND=': error: error label "ERROR" has been reached'
++export MSG_VERIFIER_ERROR_FOUND=': error: __VERIFIER_error\(\) reached'
+ export MSG_OUR_WARNINGS=': warning: .*\[-fplugin=libsl.so\]$'
+ export MSG_TIME_ELAPSED=': note: clEasyRun\(\) took '
+ export MSG_UNHANDLED_CALL=': warning: ignoring call of undefined function: '
+@@ -25,7 +26,7 @@ export MSG_FREE_INVALID=': error: invalid free\(\)'
+ export MSG_FREE_DOUBLE=': error: double free\(\)'
+ export MSG_FREE_NENH=': error: attempt to free a non-existing non-heap object'
+ export MSG_FREE_NONHEAP=': error: attempt to free a non-heap object'
+-export MSG_FREE_NONPOINTER=': error: free() called on non-pointer value'
++export MSG_FREE_NONPOINTER=': error: free\(\) called on non-pointer value'
+ 
+ # Predator error messages we need to handle:
+ #"size arg of memset() is not a known integer" - no category
+@@ -72,6 +73,13 @@ usage() {
+     -t, --trace FILE
+           A file name to write the trace to.
+ 
++    -x, --xmltrace FILE
++          A file name to write the XML trace to. (Default: no XML trace)
++          Warning: no colon and no whitespace in FILE allowed
++
++    -d, --depth NUMBER
++          A depth limit. (Default: unlimited)
++
+     -v, --verbose
+           Prints more information about the result. Not to be used during the
+           competition.
+@@ -91,11 +99,13 @@ EOF
+ }
+ 
+ PRP_FILE=
++DEPTH=""
++XMLTRACE=""
+ 
+ # write trace to stderr by default
+ TRACE="/dev/fd/2"
+ 
+-ARGS=$(getopt -o p:t:v -l "propertyfile:,trace:,verbose" -n "$SELF" -- "$@")
++ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
+ if test $? -ne 0; then
+   usage; exit 1;
+ fi
+@@ -108,6 +118,10 @@ while true; do
+       PRP_FILE="$2"; shift 2;;
+     -t|--trace)
+       TRACE="$2"; shift 2;;
++    -x|--xmltrace)
++      XMLTRACE="$2"; shift 2;;
++    -d|--depth)
++      DEPTH="$2"; shift 2;;
+     -v|--verbose)
+       export VERBOSE="yes"; shift;;
+     --)
+@@ -119,7 +133,7 @@ test -r "$1" || usage
+ test -r "$PRP_FILE" || usage
+ 
+ # classify the property to be verified
+-if grep "label(ERROR)" "$PRP_FILE" >/dev/null; then
++if grep "call(__VERIFIER_error()" "$PRP_FILE" >/dev/null; then
+     TASK="label"
+ elif grep "valid-memtrack" "$PRP_FILE" >/dev/null; then
+     TASK="memory"
+@@ -187,6 +201,12 @@ parse_gcc_output() {
+             # unhandled integer overflow, we have to fail
+             fail "$line"
+ 
++        elif match "$line" "$MSG_VERIFIER_ERROR_FOUND"; then
++            # an __VERIFIER_error() has been reached
++            case "$TASK" in
++              label) report_unsafe "" "$line";;
++              memory) continue;;                ### TODO
++            esac
+         elif match "$line" "$MSG_LABEL_FOUND"; then
+             # an ERROR label has been reached
+             case "$TASK" in
+@@ -255,6 +275,14 @@ case "$TASK" in
+     memory) ARGS="no_error_recovery,memleak_is_error";;
+ esac
+ 
++if test ! x = "x$DEPTH"; then
++    ARGS="$ARGS,depth_limit:$DEPTH"
++fi
++
++if test ! x = "x$XMLTRACE"; then
++    ARGS="$ARGS,xml_trace:$XMLTRACE"
++fi
++
+ "$GCC_HOST"                                             \
+     -fplugin="${GCC_PLUG}"                              \
+     -fplugin-arg-libsl-args="$ARGS"                     \
+diff --git a/sl/config.h b/sl/config.h
+index 784b437..a75fb5f 100644
+--- a/sl/config.h
++++ b/sl/config.h
+@@ -126,7 +126,7 @@
+  * - 2 ... also when joining states if the three-way join is considered useful
+  * - 3 ... do not restrict the usage of three-way join at the level of symjoin
+  */
+-#define SE_ALLOW_THREE_WAY_JOIN             2
++#define SE_ALLOW_THREE_WAY_JOIN             0
+ 
+ /**
+  * if 1, assume that the contents of static data is initialized on first access
+@@ -139,7 +139,7 @@
+  * - 2 ... use DFS scheduler, move already scheduled blocks to front of queue
+  * - 3 ... use load-driven scheduler (picks the one with fewer pending heaps)
+  */
+-#define SE_BLOCK_SCHEDULER_KIND             2
++#define SE_BLOCK_SCHEDULER_KIND             0
+ 
+ /**
+  * call cache miss count that will trigger function removal (0 means disabled)
+@@ -176,17 +176,17 @@
+ /**
+  * if 1, do not use DLS (Doubly-linked List Segment) abstraction
+  */
+-#define SE_DISABLE_DLS                      0
++#define SE_DISABLE_DLS                      1
+ 
+ /**
+  * if 1, do not use SLS (Singly-linked List Segment) abstraction
+  */
+-#define SE_DISABLE_SLS                      0
++#define SE_DISABLE_SLS                      1
+ 
+ /**
+  * if 1, do not use the @b symcut module at all
+  */
+-#define SE_DISABLE_SYMCUT                   0
++#define SE_DISABLE_SYMCUT                   1
+ 
+ /**
+  * - 0 ... do not dump trace graphs unless explicitly asked to do so
+@@ -206,14 +206,14 @@
+  * - 1 ... call cache enabled, use graph isomorphism for lookup (hungry on mem)
+  * - 2 ... call cache enabled, use join operator for lookup [experimental]
+  */
+-#define SE_ENABLE_CALL_CACHE                1
++#define SE_ENABLE_CALL_CACHE                0
+ 
+ /**
+  * - 0 no error recovery, stop the analysis as soon as an error is detected
+  * - 1 low-cost error recovery (stop analyzing paths with errors already caught)
+  * - 2 full error recovery (keep analyzing until a non-recoverable error occurs)
+  */
+-#define SE_ERROR_RECOVERY_MODE              1
++#define SE_ERROR_RECOVERY_MODE              0
+ 
+ /**
+  * if non-zero, do not replace a previously tracked if entailed by a new one
+@@ -223,7 +223,7 @@
+ /**
+  * the highest integral number we can count to (only partial implementation atm)
+  */
+-#define SE_INT_ARITHMETIC_LIMIT             10
++#define SE_INT_ARITHMETIC_LIMIT             32
+ 
+ /**
+  * - -1 ... never join, never check for entailment, always check for isomorphism
+@@ -232,7 +232,7 @@
+  * - 2 ... join only when traversing a loop-closing edge, isomorphism otherwise
+  * - 3 ... same as 2 but skips the isomorphism check when considered redundant
+  */
+-#define SE_JOIN_ON_LOOP_EDGES_ONLY          3
++#define SE_JOIN_ON_LOOP_EDGES_ONLY          -1
+ 
+ /**
+  * maximal call depth
+@@ -312,7 +312,7 @@
+ /**
+  * if 1, prevent collisions on entity IDs with descendants heaps
+  */
+-#define SH_PREVENT_AMBIGUOUS_ENT_ID         1
++#define SH_PREVENT_AMBIGUOUS_ENT_ID         0
+ 
+ /**
+  * if more than zero, jump to debugger as soon as N graph of the same name has
+diff --git a/sl/glconf.cc b/sl/glconf.cc
+index f9f9002..13a892f 100644
+--- a/sl/glconf.cc
++++ b/sl/glconf.cc
+@@ -50,6 +50,8 @@ Options::Options():
+     joinOnLoopEdgesOnly(SE_JOIN_ON_LOOP_EDGES_ONLY),
+     stateLiveOrdering(SE_STATE_ON_THE_FLY_ORDERING),
+     detectContainers(false),
++    limitDepth(-1),
++    xmlTrace(""),
+     fixedPoint(0)
+ {
+ }
+@@ -86,6 +88,7 @@ void handleDumpFixedPoint(const string &name, const string &value)
+ 
+ void handleErrorLabel(const string &name, const string &value)
+ {
++    return; // ignore error label parameter
+     if (value.empty()) {
+         CL_WARN("ignoring option \"" << name << "\" without a valid value");
+         return;
+@@ -222,6 +225,27 @@ void handleDetectContainers(const string &name, const string &value)
+     handleDumpFixedPoint(name, value);
+ }
+ 
++void handleDepthLimit(const string &name, const string &value)
++{
++    try {
++        data.limitDepth = boost::lexical_cast<int>(value);
++        // TODO: check value
++    }
++    catch (...) {
++        CL_WARN("ignoring option \"" << name << "\" with invalid value");
++    }
++}
++
++void handleXMLTrace(const string &name, const string &value)
++{
++    if (value.empty()) {
++        CL_WARN("ignoring option \"" << name << "\" without a valid value");
++        return;
++    }
++
++    data.xmlTrace = value;
++}
++
+ ConfigStringParser::ConfigStringParser()
+ {
+     tbl_["allow_cyclic_trace_graph"]= handleAllowCyclicTraceGraph;
+@@ -238,6 +262,8 @@ ConfigStringParser::ConfigStringParser()
+     tbl_["oom"]                     = handleOOM;
+     tbl_["state_live_ordering"]     = handleStateLiveOrdering;
+     tbl_["track_uninit"]            = handleTrackUninit;
++    tbl_["depth_limit"]             = handleDepthLimit;
++    tbl_["xml_trace"]               = handleXMLTrace;
+ }
+ 
+ void ConfigStringParser::handleRawOption(const string &raw) const
+diff --git a/sl/glconf.hh b/sl/glconf.hh
+index fdffe2e..17c6884 100644
+--- a/sl/glconf.hh
++++ b/sl/glconf.hh
+@@ -44,6 +44,8 @@ struct Options {
+     int joinOnLoopEdgesOnly;///< @copydoc config.h::SE_JOIN_ON_LOOP_EDGES_ONLY
+     int stateLiveOrdering;  ///< @copydoc config.h::SE_STATE_ON_THE_FLY_ORDERING
+     bool detectContainers;  ///< detect containers and operations over them
++    int limitDepth;         ///< @copydoc EXPERIMENTAL: limit depth of DFS
++    std::string xmlTrace;   ///< @copydoc EXPERIMENTAL: XML trace file name
+     FixedPoint::StateByInsn *fixedPoint;  ///< fixed-point plotter (0 if unused)
+ 
+     Options();
+diff --git a/sl/symbin.cc b/sl/symbin.cc
+index 823bdb1..4c2ca69 100644
+--- a/sl/symbin.cc
++++ b/sl/symbin.cc
+@@ -43,6 +43,8 @@
+ #include <libgen.h>
+ #include <map>
+ 
++#include "xmltrace.hh"
++
+ typedef const struct cl_loc     *TLoc;
+ typedef const struct cl_operand &TOp;
+ 
+@@ -414,7 +416,7 @@ bool handleAlloca(
+     // amount of allocated memory must be known (TODO: relax this?)
+     const TValId valSize = core.valFromOperand(opList[/* size */ 2]);
+     IR::Range size;
+-    if (rngFromVal(&size, core.sh(), valSize) && IR::Int0 <= size.lo) {
++    if (rngFromVal(&size, core.sh(), valSize) && IR::Int0 <= size.lo && isSingular(size)) {
+         CL_DEBUG_MSG(loc, "executing " << name << "()");
+         core.execStackAlloc(insn.operands[/* dst */ 0], size);
+     }
+@@ -941,6 +943,30 @@ bool handleError(
+     return true;
+ }
+ 
++bool handleVerifierError(
++        SymState                                    & /* dst */,
++        SymExecCore                                 &core,
++        const CodeStorage::Insn                     &insn,
++        const char                                  *name)
++{
++    const struct cl_loc *loc = &insn.loc;
++
++    const CodeStorage::TOperandList &opList = insn.operands;
++    if (opList.size() != 2 || opList[0].code != CL_OPERAND_VOID) {
++        emitPrototypeError(loc, name);
++        return false;
++    }
++
++    // print the error message
++    CL_ERROR_MSG(loc, name
++            << "() reached, analysis of this code path will not continue");
++    XML_ERROR_MSG(loc, name << "() reached, analysis of this code path will not continue");
++
++    // print backtrace
++    core.printBackTrace(ML_ERROR);
++    return true;
++}
++
+ // singleton
+ class BuiltInTable {
+     public:
+@@ -1018,6 +1044,7 @@ BuiltInTable::BuiltInTable()
+     tbl_["___sl_error"]                             = handleError;
+     tbl_["___sl_get_nondet_int"]                    = handleNondetInt;
+     tbl_["__VERIFIER_plot"]                         = handlePlot;
++    tbl_["__VERIFIER_error"]                        = handleVerifierError;
+     tbl_["___sl_plot_trace_now"]                    = handlePlotTraceNow;
+     tbl_["___sl_plot_trace_once"]                   = handlePlotTraceOnce;
+     tbl_["___sl_enable_debugging_of"]               = handleDebuggingOf;
+diff --git a/sl/symbt.cc b/sl/symbt.cc
+index 53a3b91..14093c2 100644
+--- a/sl/symbt.cc
++++ b/sl/symbt.cc
+@@ -31,10 +31,13 @@
+ #include <queue>
+ #include <stack>
+ #include <utility>
++#include <iostream>
+ 
+ #include <boost/foreach.hpp>
+ #include <boost/tuple/tuple.hpp>
+ 
++#include "xmltrace.hh"
++
+ struct SymBackTrace::Private {
+     struct BtStackItem {
+         const CodeStorage::Fnc              &fnc;
+@@ -157,9 +160,12 @@ bool SymBackTrace::printBackTrace() const
+     if (ref.size() < 2)
+         return false;
+ 
+-    BOOST_FOREACH(const Private::BtStackItem &item, ref)
++    BOOST_FOREACH(const Private::BtStackItem &item, ref) {
+         CL_NOTE_MSG(item.loc, "from call of " << nameOf(item.fnc) << "()");
+-
++        //std::cout << "### " << item.loc->file << ':' << item.loc->line << "\n";
++        XML_NOTE_MSG(item.loc, "from call of " << nameOf(item.fnc) << "()");
++    }
++    XMLTraceEnd();
+     return true;
+ }
+ 
+diff --git a/sl/symexec.cc b/sl/symexec.cc
+index 9d293c1..21b8dfe 100644
+--- a/sl/symexec.cc
++++ b/sl/symexec.cc
+@@ -292,6 +292,15 @@ bool isLoopClosingEdge(
+ 
+ void SymExecEngine::updateState(SymHeap &sh, const CodeStorage::Block *ofBlock)
+ {
++    // do not insert if depth limit reached  (Warning: EXPERIMENTAL)
++    int limit = GlConf::data.limitDepth;
++    if(limit > 0 && sh.generation() > limit) {
++        CL_DEBUG("SymExecEngine::updateState() - depth limit reached");
++        // TODO: mark incomplete analysis (Warning)
++        CL_WARN_MSG(lw_, "Depth limit reached (" << sh.generation() << ")");
++        return;
++    }
++
+     const std::string &name = ofBlock->name();
+ 
+     bool closingLoop = isLoopClosingEdge(/* term */ block_->back(), ofBlock);
+diff --git a/sl/symheap.cc b/sl/symheap.cc
+index c99bef1..f9163c1 100644
+--- a/sl/symheap.cc
++++ b/sl/symheap.cc
+@@ -41,6 +41,7 @@
+ #include <algorithm>
+ #include <map>
+ #include <set>
++#include <limits>
+ 
+ #include <boost/foreach.hpp>
+ #include <boost/tuple/tuple.hpp>
+@@ -1877,6 +1878,7 @@ bool SymHeapCore::findCoveringUniBlocks(
+ 
+ SymHeapCore::SymHeapCore(TStorRef stor, Trace::Node *trace):
+     stor_(stor),
++    generation_(0),
+     d(new Private(trace))
+ {
+     CL_BREAK_IF(!&stor_);
+@@ -1906,9 +1908,11 @@ SymHeapCore::SymHeapCore(TStorRef stor, Trace::Node *trace):
+ 
+ SymHeapCore::SymHeapCore(const SymHeapCore &ref):
+     stor_(ref.stor_),
++    generation_(ref.generation_ + 1),
+     d(new Private(*ref.d))
+ {
+     CL_BREAK_IF(!&stor_);
++    CL_BREAK_IF(generation_ == std::numeric_limits<int>::max()); // overflow
+ }
+ 
+ SymHeapCore::~SymHeapCore()
+@@ -1924,6 +1928,7 @@ SymHeapCore& SymHeapCore::operator=(const SymHeapCore &ref)
+ 
+     delete d;
+     d = new Private(*ref.d);
++    generation_ = ref.generation_;
+     return *this;
+ }
+ 
+@@ -1931,6 +1936,7 @@ void SymHeapCore::swap(SymHeapCore &ref)
+ {
+     CL_BREAK_IF(&stor_ != &ref.stor_);
+     swapValues(this->d, ref.d);
++    swapValues(generation_, ref.generation_);
+ }
+ 
+ Trace::Node* SymHeapCore::traceNode() const
+diff --git a/sl/symheap.hh b/sl/symheap.hh
+index d32543d..0e4c7f6 100644
+--- a/sl/symheap.hh
++++ b/sl/symheap.hh
+@@ -374,6 +374,9 @@ class SymHeapCore {
+         /// each symbolic heap is associated with a CodeStorage model of code
+         TStorRef stor() const { return stor_; }
+ 
++        /// each symbolic heap is associated with its generation number
++        int generation() const { return generation_; }
++
+         /// each symbolic heap is associated with a trace graph node
+         Trace::Node* traceNode() const;
+ 
+@@ -597,6 +600,7 @@ class SymHeapCore {
+ 
+     protected:
+         TStorRef stor_;
++        int generation_;        // for DFS depth limit checking
+ 
+     private:
+         struct Private;
+diff --git a/sl/symproc.cc b/sl/symproc.cc
+index a4f9e5e..6b129fe 100644
+--- a/sl/symproc.cc
++++ b/sl/symproc.cc
+@@ -47,10 +47,13 @@
+ #include <boost/foreach.hpp>
+ #include <boost/tuple/tuple.hpp>
+ 
++#include "xmltrace.hh"
++
+ /// report a memory leak as either error or warning based on the configuration
+ #define REPORT_MEMLEAK(proc, msg) do {      \
+     if (GlConf::data.memLeakIsError) {      \
+         CL_ERROR_MSG((proc).lw(), msg);     \
++        XML_ERROR_MSG((proc).lw(), msg);    \
+         (proc).printBackTrace(ML_ERROR);    \
+     }                                       \
+     else {                                  \
+@@ -76,6 +79,8 @@ void SymProc::printBackTrace(EMsgLevel level, bool forcePtrace)
+     else if (bt_->printBackTrace())
+         printMemUsage("SymBackTrace::printBackTrace");
+ 
++    XMLTraceEnd();
++
+     // dump trace graph, or schedule and endpoint for batch trace graph dump
+ #if 2 == SE_DUMP_TRACE_GRAPHS
+     Trace::plotTrace(sh_.traceNode(), "symtrace");
+@@ -212,6 +217,7 @@ void reportDerefOutOfBounds(
+     CL_BREAK_IF(sizeOfTarget <= 0);
+     CL_ERROR_MSG(loc, "dereferencing object of size " << sizeOfTarget
+             << "B out of bounds");
++    XML_ERROR_MSG(loc, "dereferencing object of size " << sizeOfTarget << "B out of bounds");
+ 
+     // what is the root actually?
+     const TObjId obj = sh.objByAddr(val);
+@@ -254,6 +260,7 @@ bool SymProc::checkForInvalidDeref(TValId val, const TSizeOf sizeOfTarget)
+ {
+     if (VAL_NULL == val) {
+         CL_ERROR_MSG(lw_, "dereference of NULL value");
++        XML_ERROR_MSG(lw_, "dereference of NULL value");
+         return true;
+     }
+ 
+@@ -262,6 +269,7 @@ bool SymProc::checkForInvalidDeref(TValId val, const TSizeOf sizeOfTarget)
+         const TOffset off = sh_.valOffset(val);
+         CL_ERROR_MSG(lw_, "dereference of NULL value with offset "
+                 << off << "B");
++        XML_ERROR_MSG(lw_, "dereference of NULL value with offset " << off << "B");
+ 
+         return true;
+     }
+@@ -280,6 +288,7 @@ bool SymProc::checkForInvalidDeref(TValId val, const TSizeOf sizeOfTarget)
+         case VT_CUSTOM:
+         case VT_UNKNOWN:
+             CL_ERROR_MSG(lw_, "invalid dereference");
++            XML_ERROR_MSG(lw_, "invalid dereference");
+             describeUnknownVal(*this, val, "dereference");
+             return true;
+ 
+@@ -296,10 +305,12 @@ bool SymProc::checkForInvalidDeref(TValId val, const TSizeOf sizeOfTarget)
+ 
+             case SC_ON_STACK:
+                 CL_ERROR_MSG(lw_,"dereference of non-existing non-heap object");
++                XML_ERROR_MSG(lw_,"dereference of non-existing non-heap object");
+                 break;
+ 
+             case SC_ON_HEAP:
+                 CL_ERROR_MSG(lw_, "dereference of already deleted heap object");
++                XML_ERROR_MSG(lw_, "dereference of already deleted heap object");
+                 break;
+         }
+ 
+@@ -655,6 +666,7 @@ TValId ptrObjectEncoderCore(
+ 
+     const struct cl_loc *loc = proc.lw();
+     CL_ERROR_MSG(loc, "not enough space to store value of a pointer");
++    XML_ERROR_MSG(loc, "not enough space to store value of a pointer");
+     CL_NOTE_MSG(loc, "dstSize: " << dstSize << " B");
+     CL_NOTE_MSG(loc, "ptrSize: " << ptrSize << " B");
+     proc.printBackTrace(ML_ERROR);
+@@ -766,6 +778,7 @@ void objSetAtomicVal(SymProc &proc, const FldHandle &lhs, TValId rhs)
+ {
+     if (!lhs.isValidHandle()) {
+         CL_ERROR_MSG(proc.lw(), "invalid L-value");
++        XML_ERROR_MSG(proc.lw(), "invalid L-value");
+         proc.printBackTrace(ML_ERROR);
+         return;
+     }
+@@ -1216,6 +1229,7 @@ void SymExecCore::execFree(TValId val)
+     switch (code) {
+         case VT_CUSTOM:
+             CL_ERROR_MSG(lw_, "free() called on non-pointer value");
++            XML_ERROR_MSG(lw_, "free() called on non-pointer value");
+             this->printBackTrace(ML_ERROR);
+             return;
+ 
+@@ -1233,6 +1247,7 @@ void SymExecCore::execFree(TValId val)
+                 return;
+ 
+             CL_ERROR_MSG(lw_, "invalid free()");
++            XML_ERROR_MSG(lw_, "invalid free()");
+             describeUnknownVal(*this, val, "free");
+             this->printBackTrace(ML_ERROR);
+             return;
+@@ -1256,6 +1271,7 @@ void SymExecCore::execFree(TValId val)
+         case SC_ON_STACK:
+             if (!hasValidTarget) {
+                 CL_ERROR_MSG(lw_, "attempt to free a non-existing non-heap object");
++                XML_ERROR_MSG(lw_, "attempt to free a non-existing non-heap object");
+                 this->printBackTrace(ML_ERROR);
+                 return;
+             }
+@@ -1263,12 +1279,14 @@ void SymExecCore::execFree(TValId val)
+ 
+         case SC_STATIC:
+             CL_ERROR_MSG(lw_, "attempt to free a non-heap object");
++            XML_ERROR_MSG(lw_, "attempt to free a non-heap object");
+             this->printBackTrace(ML_ERROR);
+             return;
+     }
+ 
+     if (!hasValidTarget) {
+         CL_ERROR_MSG(lw_, "double free()");
++        XML_ERROR_MSG(lw_, "double free()");
+         this->printBackTrace(ML_ERROR);
+         return;
+     }
+@@ -1276,6 +1294,7 @@ void SymExecCore::execFree(TValId val)
+     const TOffset off = sh_.valOffset(val);
+     if (off) {
+         CL_ERROR_MSG(lw_, "free() called with offset " << off << "B");
++        XML_ERROR_MSG(lw_, "free() called with offset " << off << "B");
+         this->printBackTrace(ML_ERROR);
+         return;
+     }
+@@ -2427,6 +2446,7 @@ void SymExecCore::handleLabel(const CodeStorage::Insn &insn)
+         return;
+ 
+     CL_ERROR_MSG(lw_, "error label \"" << name << "\" has been reached");
++    XML_ERROR_MSG(lw_, "error label \"" << name << "\" has been reached");
+ 
+     // print the backtrace and leave
+     this->printBackTrace(ML_ERROR, /* forcePtrace */ true);
+diff --git a/sl/symstate.cc b/sl/symstate.cc
+index 0b91e35..c525271 100644
+--- a/sl/symstate.cc
++++ b/sl/symstate.cc
+@@ -606,6 +606,17 @@ bool SymStateMap::insert(
+         const SymHeap                   &sh,
+         const bool                      allowThreeWay)
+ {
++    // moved up with CL_WARN_MSG, this can be removed after more testing
++    // do not insert if depth limit reached  (Warning: EXPERIMENTAL)
++    int limit = GlConf::data.limitDepth;
++    if(limit > 0 && sh.generation() > limit) {
++        CL_DEBUG("SymStateMap::insert() ignored - depth limit reached");
++        // TODO: mark incomplete analysis (Warning)
++        std::cout << "Depth limit reached (" << sh.generation() << ")\n";
++        //CL_WARN_MSG(where-to-get-lineinfo?, "Depth limit reached (" << sh.generation() << ")");
++        return false;
++    }
++
+     // look for the _target_ block
+     Private::BlockState &ref = d->cont[dst];
+     const unsigned size = ref.state.size();
+diff --git a/sl/symtrace.cc b/sl/symtrace.cc
+index 7e61db2..9aa08d4 100644
+--- a/sl/symtrace.cc
++++ b/sl/symtrace.cc
+@@ -36,6 +36,9 @@
+ #include <boost/algorithm/string/replace.hpp>
+ #include <boost/foreach.hpp>
+ 
++#include "glconf.hh"
++#include "xmltrace.hh"
++
+ namespace Trace {
+ 
+ typedef const Node                                     *TNode;
+@@ -638,6 +641,7 @@ Node* /* selected predecessor */ CloneNode::printNode() const
+ Node* /* selected predecessor */ CallEntryNode::printNode() const
+ {
+     CL_NOTE_MSG(&insn_->loc, "from call of " << (*insn_));
++    XML_NOTE_MSG(&insn_->loc, "from call of " << (*insn_));
+     return this->parent();
+ }
+ 
+@@ -670,6 +674,7 @@ Node* /* selected predecessor */ CondNode::printNode() const
+         : "FALSE";
+ 
+     CL_NOTE_MSG(&inCmp_->loc, (*inCmp_) << " ... " << action << result);
++    XML_NOTE_MSG(&inCmp_->loc, (*inCmp_) << " ... " << action << result);
+     return this->parent();
+ }
+ 
+@@ -871,3 +876,262 @@ void waiveCloneOperation(SymState &state)
+ }
+ 
+ } // namespace Trace
++
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++// XML OUTPUT
++// TODO: extra module
++
++#ifndef SVTRACE_LITE_H
++#define SVTRACE_LITE_H
++
++#include <vector>
++#include <ostream>
++#include <fstream>
++
++namespace CodeStorage {
++        struct Insn;
++}
++
++/**
++ * @brief Class provides method for printing trace compatible with SV-Comp format.
++ */
++class SVTraceLite
++{
++
++private: // private members
++
++        int nodeNumber_;
++
++public: // public methods
++
++        SVTraceLite() : nodeNumber_(1)
++        {}
++
++
++        /*
++         * @brief Method prints trace from @instrs to the @out using.
++         *
++         * @instrs which contains the instructions of a error trace. It gradually
++         * creates trace graph and print it to @out.
++         * @param[in]  instrs     Instruction included in error trace.
++         * @param[out] out        Output stream where the graph is printed
++         */
++        void printTrace(
++                        const std::vector<const CodeStorage::Insn*>&   instrs,
++                        std::ostream&                                  out);
++};
++
++#endif
++
++// XML initialization
++const std::string START       = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n\
++<graphml xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://graphml.graphdrawing.org/xmlns\">\n\
++        <key attr.name=\"lineNumberInOrigin\" attr.type=\"int\" for=\"edge\" id=\"originline\"/>\n\
++        <key attr.name=\"originFileName\" attr.type=\"string\" for=\"edge\" id=\"originfile\">\n\
++                <default>\"&lt;command-line&gt;\"</default>\n\
++        </key>\n\
++        <key attr.name=\"nodeType\" attr.type=\"string\" for=\"node\" id=\"nodetype\">\n\
++                <default>path</default>\n\
++        </key>\n\
++        <key attr.name=\"isFrontierNode\" attr.type=\"boolean\" for=\"node\" id=\"frontier\">\n\
++                <default>false</default>\n\
++        </key>\n\
++        <key attr.name=\"isViolationNode\" attr.type=\"boolean\" for=\"node\" id=\"violation\">\n\
++                <default>false</default>\n\
++        </key>\n\
++        <key attr.name=\"isEntryNode\" attr.type=\"boolean\" for=\"node\" id=\"entry\">\n\
++                <default>false</default>\n\
++        </key>\n\
++        <key attr.name=\"isSinkNode\" attr.type=\"boolean\" for=\"node\" id=\"sink\">\n\
++                <default>false</default>\n\
++        </key>\n\
++        <key attr.name=\"enterFunction\" attr.type=\"string\" for=\"edge\" id=\"enterFunction\"/>\n\
++        <key attr.name=\"returnFromFunction\" attr.type=\"string\" for=\"edge\" id=\"returnFrom\"/>\n\
++        <graph edgedefault=\"directed\">\n\
++                <data key=\"sourcecodelang\">C</data>\n";
++
++
++const std::string END         = "</graph>\n</graphml>";
++const std::string DATA_START  = "<data key=";
++const std::string DATA_END    = "</data>\n";
++const std::string NODE_START  = "<node id=";
++const std::string NODE_END    = "</node>";
++const std::string NODE_ENTRY  = "<data key=\"entry\">true</data>";
++const std::string NODE_NAME   = "A";
++const std::string VIOLATION   = "<data key=\"violation\">true";
++const std::string EDGE_START  = "<edge source=";
++const std::string EDGE_END    = "</edge>";
++const std::string EDGE_TARGET = " target=";
++
++
++#if 0
++bool instrsEq( const CodeStorage::Insn*                       instr1,
++               const CodeStorage::Insn*                       instr2)
++{
++        return instr1->loc.line == instr2->loc.line &&
++                instr1->loc.column >= instr2->loc.column && // TODO: remove this if needed
++                instr1->code == instr2->code;
++}
++#endif
++
++void printStart(std::ostream& out)
++{
++        out << START;
++}
++
++
++void printEnd( std::ostream&                                  out,
++               int                                            endNode)
++{
++        out << "\t" << NODE_START << "\"" << NODE_NAME << endNode << "\">\n";
++        out << "\t" << VIOLATION << DATA_END;
++        out << "\t" << NODE_END << "\n";
++        out << "\t" << END;
++}
++
++void printEdge(
++                std::ostream&                                  out,
++                const std::string                              filename,
++                const int                                      lineNumber,
++                const int                                      nodeNumber)
++{
++        const std::string indent("\t\t");
++        out << "\t" << EDGE_START << "\"" << NODE_NAME << nodeNumber << "\"" <<
++                EDGE_TARGET << "\""<<  NODE_NAME << nodeNumber+1 << "\">\n";
++
++        out << indent << DATA_START << "\"originfile\">\""<<  filename << "\"" << DATA_END;
++        out << indent << DATA_START << "\"originline\">"<< lineNumber << DATA_END;
++        out << "\t" << EDGE_END << "\n";
++
++}
++
++void printNode(std::ostream&  out, const int nodeNumber)
++{
++        if (nodeNumber == 1)
++        {
++                out << "\t" << NODE_START << "\"" << NODE_NAME << nodeNumber << "\">\n\t"
++                        << NODE_ENTRY << "\n\t" << NODE_END <<"\n";
++        }
++        else
++        {
++                out << "\t" << NODE_START << "\"" << NODE_NAME << nodeNumber << "\"/>\n";
++        }
++}
++
++
++
++void SVTraceLite::printTrace(
++                        const std::vector<const CodeStorage::Insn*>&   instrs,
++                        std::ostream&                                  out)
++{
++#if 0   // removed
++        printStart(out);
++
++        for (size_t i = 0; i < instrs.size(); ++i)
++        {
++                const auto instr = instrs.at(i);
++                const int lineNumber = instr->loc.line;
++
++                if (i+1 < instrs.size() && instrsEq(instr, instrs.at(i+1)))
++                {
++                        continue;
++                }
++
++                printNode(out, nodeNumber_);
++                printEdge(out, instr->loc.file, lineNumber, nodeNumber_);
++
++                ++nodeNumber_;
++        }
++
++        printEnd(out, nodeNumber_);
++#endif
++}
++
++int XMLTraceFlag = 0;
++
++struct XMLTraceItem {
++    const char *file;
++    int line;
++    std::string msg;
++    XMLTraceItem():
++        file(NULL),
++        line(0),
++        msg("")
++    {}
++    XMLTraceItem(const char *_file, int _line, std::string _msg):
++        file(_file),
++        line(_line),
++        msg(_msg)
++    {}
++};
++
++std::stack<XMLTraceItem> XMLTraceStack;
++
++// this should be called after each CL_ERROR_MSG for XML generation start
++void XMLTraceBegin(const char *file, int line, std::string msg) {
++  if(XMLTraceFlag)
++    return;
++  if(GlConf::data.xmlTrace.empty())     // no XML file parameter specified
++    return;
++  //XMLTraceStack.clear();
++  XMLTraceStack.push(XMLTraceItem(file,line,msg));
++
++  XMLTraceFlag++;
++}
++
++void XMLTraceNode(const char *file, int line, std::string msg) {
++  if(XMLTraceFlag!=1)
++    return;
++  XMLTraceStack.push(XMLTraceItem(file,line,msg));
++}
++
++// called after ERR trace dump
++void XMLTraceEnd() {
++  if(XMLTraceFlag!=1)
++    return;
++  if(XMLTraceStack.size()==0)
++    return;
++
++  std::ofstream xmlfile(GlConf::data.xmlTrace);
++  if(!xmlfile)
++    return;
++
++  std::ofstream &out = xmlfile; // TODO
++
++  // XML header
++  printStart(out);
++
++  int nodeNumber = 1;
++  int oldLine = 0;
++  std::string oldFile = "";
++  XMLTraceItem i;
++  while(XMLTraceStack.size()>1) {
++        i = XMLTraceStack.top();
++        XMLTraceStack.pop();
++        //xmlfile << "TRACE: " << i.file << "  " << i.line << "\n";
++
++        // no duplicities
++        if(oldLine==i.line && oldFile == std::string(i.file)) continue;
++        oldLine=i.line;
++        oldFile=i.file;
++
++        printNode(out, nodeNumber);
++        printEdge(out, i.file, i.line, nodeNumber);
++        ++nodeNumber;
++  }
++
++  // the last one:
++  i = XMLTraceStack.top();
++  XMLTraceStack.pop();
++  //xmlfile << "TRACE-ERROR: " << i.file << "  " << i.line << "\n";
++  printNode(out, nodeNumber);
++  printEdge(out, i.file, i.line, nodeNumber);
++  ++nodeNumber;
++
++  // XML footer
++  printEnd(out, nodeNumber);
++
++  XMLTraceFlag++;
++}
+diff --git a/switch-host-gcc.sh b/switch-host-gcc.sh
+index a95ce6e..b062a8d 100755
+--- a/switch-host-gcc.sh
++++ b/switch-host-gcc.sh
+@@ -76,11 +76,11 @@ build_analyzer() {
+     $MAKE -C $1 CMAKE="cmake -D GCC_HOST='$GCC_HOST'" \
+         || return $?
+ 
+-    status_update "Checking whether $2 works"
+-    $MAKE -C $1 check CTEST='ctest -j9'
++#    status_update "Checking whether $2 works"
++#    $MAKE -C $1 check CTEST='ctest -j9'
+ }
+ 
+ build_analyzer fwnull fwnull
+ build_analyzer sl Predator
+-build_analyzer fa Forester
+-build_analyzer vra "Value-Range Analyzer"
++#build_analyzer fa Forester
++#build_analyzer vra "Value-Range Analyzer"

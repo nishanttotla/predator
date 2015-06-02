@@ -1,0 +1,142 @@
+diff --git a/sl/check-property.sh.in b/sl/check-property.sh.in
+index d28b483..d1fbab6 100755
+--- a/sl/check-property.sh.in
++++ b/sl/check-property.sh.in
+@@ -3,8 +3,9 @@ export SELF="$0"
+ export LC_ALL=C
+ export CCACHE_DISABLE=1
+ 
+-export MSG_INFLOOP=': warning: end of function .*() has not been reached'
++export MSG_INFLOOP=': warning: end of function .*\(\) has not been reached'
+ export MSG_LABEL_FOUND=': error: error label "ERROR" has been reached'
++export MSG_VERIFIER_ERROR_FOUND=': error: __VERIFIER_error\(\) reached'
+ export MSG_OUR_WARNINGS=': warning: .*\[-fplugin=libsl.so\]$'
+ export MSG_TIME_ELAPSED=': note: clEasyRun\(\) took '
+ export MSG_UNHANDLED_CALL=': warning: ignoring call of undefined function: '
+@@ -25,7 +26,7 @@ export MSG_FREE_INVALID=': error: invalid free\(\)'
+ export MSG_FREE_DOUBLE=': error: double free\(\)'
+ export MSG_FREE_NENH=': error: attempt to free a non-existing non-heap object'
+ export MSG_FREE_NONHEAP=': error: attempt to free a non-heap object'
+-export MSG_FREE_NONPOINTER=': error: free() called on non-pointer value'
++export MSG_FREE_NONPOINTER=': error: free\(\) called on non-pointer value'
+ 
+ # Predator error messages we need to handle:
+ #"size arg of memset() is not a known integer" - no category
+@@ -119,7 +120,7 @@ test -r "$1" || usage
+ test -r "$PRP_FILE" || usage
+ 
+ # classify the property to be verified
+-if grep "label(ERROR)" "$PRP_FILE" >/dev/null; then
++if grep "call(__VERIFIER_error()" "$PRP_FILE" >/dev/null; then
+     TASK="label"
+ elif grep "valid-memtrack" "$PRP_FILE" >/dev/null; then
+     TASK="memory"
+@@ -187,6 +188,12 @@ parse_gcc_output() {
+             # unhandled integer overflow, we have to fail
+             fail "$line"
+ 
++        elif match "$line" "$MSG_VERIFIER_ERROR_FOUND"; then
++            # an __VERIFIER_error() has been reached
++            case "$TASK" in
++              label) report_unsafe "" "$line";;
++              memory) continue;;                ### TODO
++            esac
+         elif match "$line" "$MSG_LABEL_FOUND"; then
+             # an ERROR label has been reached
+             case "$TASK" in
+diff --git a/sl/config.h b/sl/config.h
+index 784b437..ce71914 100644
+--- a/sl/config.h
++++ b/sl/config.h
+@@ -223,7 +223,7 @@
+ /**
+  * the highest integral number we can count to (only partial implementation atm)
+  */
+-#define SE_INT_ARITHMETIC_LIMIT             10
++#define SE_INT_ARITHMETIC_LIMIT             32
+ 
+ /**
+  * - -1 ... never join, never check for entailment, always check for isomorphism
+diff --git a/sl/glconf.cc b/sl/glconf.cc
+index f9f9002..1fd4460 100644
+--- a/sl/glconf.cc
++++ b/sl/glconf.cc
+@@ -86,6 +86,7 @@ void handleDumpFixedPoint(const string &name, const string &value)
+ 
+ void handleErrorLabel(const string &name, const string &value)
+ {
++    return; // ignore error label parameter
+     if (value.empty()) {
+         CL_WARN("ignoring option \"" << name << "\" without a valid value");
+         return;
+diff --git a/sl/symbin.cc b/sl/symbin.cc
+index 823bdb1..f9761b4 100644
+--- a/sl/symbin.cc
++++ b/sl/symbin.cc
+@@ -414,7 +414,7 @@ bool handleAlloca(
+     // amount of allocated memory must be known (TODO: relax this?)
+     const TValId valSize = core.valFromOperand(opList[/* size */ 2]);
+     IR::Range size;
+-    if (rngFromVal(&size, core.sh(), valSize) && IR::Int0 <= size.lo) {
++    if (rngFromVal(&size, core.sh(), valSize) && IR::Int0 <= size.lo && isSingular(size)) {
+         CL_DEBUG_MSG(loc, "executing " << name << "()");
+         core.execStackAlloc(insn.operands[/* dst */ 0], size);
+     }
+@@ -941,6 +941,29 @@ bool handleError(
+     return true;
+ }
+ 
++bool handleVerifierError(
++        SymState                                    & /* dst */,
++        SymExecCore                                 &core,
++        const CodeStorage::Insn                     &insn,
++        const char                                  *name)
++{
++    const struct cl_loc *loc = &insn.loc;
++
++    const CodeStorage::TOperandList &opList = insn.operands;
++    if (opList.size() != 2 || opList[0].code != CL_OPERAND_VOID) {
++        emitPrototypeError(loc, name);
++        return false;
++    }
++
++    // print the error message
++    CL_ERROR_MSG(loc, name
++            << "() reached, analysis of this code path will not continue");
++
++    // print backtrace
++    core.printBackTrace(ML_ERROR);
++    return true;
++}
++
+ // singleton
+ class BuiltInTable {
+     public:
+@@ -1018,6 +1041,7 @@ BuiltInTable::BuiltInTable()
+     tbl_["___sl_error"]                             = handleError;
+     tbl_["___sl_get_nondet_int"]                    = handleNondetInt;
+     tbl_["__VERIFIER_plot"]                         = handlePlot;
++    tbl_["__VERIFIER_error"]                        = handleVerifierError;
+     tbl_["___sl_plot_trace_now"]                    = handlePlotTraceNow;
+     tbl_["___sl_plot_trace_once"]                   = handlePlotTraceOnce;
+     tbl_["___sl_enable_debugging_of"]               = handleDebuggingOf;
+diff --git a/switch-host-gcc.sh b/switch-host-gcc.sh
+index a95ce6e..b062a8d 100755
+--- a/switch-host-gcc.sh
++++ b/switch-host-gcc.sh
+@@ -76,11 +76,11 @@ build_analyzer() {
+     $MAKE -C $1 CMAKE="cmake -D GCC_HOST='$GCC_HOST'" \
+         || return $?
+ 
+-    status_update "Checking whether $2 works"
+-    $MAKE -C $1 check CTEST='ctest -j9'
++#    status_update "Checking whether $2 works"
++#    $MAKE -C $1 check CTEST='ctest -j9'
+ }
+ 
+ build_analyzer fwnull fwnull
+ build_analyzer sl Predator
+-build_analyzer fa Forester
+-build_analyzer vra "Value-Range Analyzer"
++#build_analyzer fa Forester
++#build_analyzer vra "Value-Range Analyzer"
