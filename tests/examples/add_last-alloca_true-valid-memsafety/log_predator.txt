@@ -1,0 +1,12 @@
+>>>execute
+>>>execTopCall
+>>>execFnc
+>>>enterCall
+location is add_last-alloca_true-valid-memsafety.c:7:6: 
+op1 is #2303:length
+op2 is (int)0
+
+location is add_last-alloca_true-valid-memsafety.c:7:18: 
+op1 is #2313:length.0
+op2 is (int)536870910U
+

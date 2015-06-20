@@ -1,0 +1,85 @@
+[int ()():0]main():
+		goto L1
+
+	L1:
+		[struct Node *:8]%mF2309:list := NULL
+		[struct Node *:8]%mF2310:y := NULL
+		[struct Node *:8]%mF2310:y := [void * ()(unsigned int):0]malloc(32U)
+		[struct TNode *:8]%mF2310:y->[+0]next := NULL
+		[struct TNode *:8]%mF2310:y->[+8]prev := NULL
+		[struct Data *:8]%r2320 := [struct Data *:8]&%mF2310:y->[+24]data
+		[struct Data *:8]%mF2310:y->[+16]pData := [struct Data *:8]%r2320
+		[struct Node *:8]%mF2309:list := [struct Node *:8]%mF2310:y
+		goto L2
+
+	L3:
+		[struct Node *:8]%mF2310:y := [void * ()(unsigned int):0]malloc(32U)
+		[struct TNode *:8]%mF2310:y->[+0]next := [struct Node *:8]%mF2309:list
+		[struct TNode *:8]%mF2309:list->[+8]prev := [struct Node *:8]%mF2310:y
+		[int:4]%r2321 := [int ()():0]__VERIFIER_nondet_int()
+		[bool:1]%r1048577 := ([int:4]%r2321 != 0)
+		if ([bool:1]%r1048577)
+			goto L4
+		else
+			goto L5
+
+	L4:
+		[void *:8]%r2324 := [void * ()(unsigned int):0]malloc(1U)
+		[struct Data *:8]%mF2310:y->[+16]pData := [void *:8]%r2324
+		goto L6
+
+	L5:
+		[struct Data *:8]%r2326 := [struct Data *:8]&%mF2310:y->[+24]data
+		[struct Data *:8]%mF2310:y->[+16]pData := [struct Data *:8]%r2326
+		goto L6
+
+	L6:
+		[struct Node *:8]%mF2309:list := [struct Node *:8]%mF2310:y
+		goto L2
+
+	L2:
+		[int:4]%r2327 := [int ()():0]__VERIFIER_nondet_int()
+		[bool:1]%r1048578 := ([int:4]%r2327 != 0)
+		if ([bool:1]%r1048578)
+			goto L3
+		else
+			goto L7
+
+	L7:
+		goto L8
+
+	L9:
+		[struct Node *:8]%mF2310:y := [struct Node *:8]%mF2309:list
+		[struct Node *:8]%mF2309:list := [struct TNode *:8]%mF2309:list->[+0]next
+		[struct Data *:8]%r2328 := [struct Data *:8]&%mF2310:y->[+24]data
+		[struct Data *:8]%r2329 := [struct Data *:8]%mF2310:y->[+16]pData
+		[bool:1]%r1048579 := ([struct Data *:8]%r2328 != [struct Data *:8]%r2329)
+		if ([bool:1]%r1048579)
+			goto L10
+		else
+			goto L11
+
+	L10:
+		[struct Data *:8]%r2332 := [struct Data *:8]%mF2310:y->[+16]pData
+		[void ()(void *):0]free([struct Data *:8]%r2332)
+		goto L11
+
+	L11:
+		[void ()(void *):0]free([struct Node *:8]%mF2310:y)
+		goto L8
+
+	L8:
+		[bool:1]%r1048580 := ([struct Node *:8]%mF2309:list != NULL)
+		if ([bool:1]%r1048580)
+			goto L9
+		else
+			goto L12
+
+	L12:
+		[int:4]%r2333 := 0
+		goto L13
+
+	L13:
+		ret [int:4]%r2333
+
+

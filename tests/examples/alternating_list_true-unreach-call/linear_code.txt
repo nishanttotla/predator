@@ -1,0 +1,131 @@
+[void ()(int):0]exit(%arg1: [int:4]%mF2303:s):
+		goto L1
+
+	L1:
+	_EXIT:
+		goto L1
+
+[int ()():0]main():
+		goto L2
+
+	L2:
+		[int:4]%mF2309:flag := 1
+		[struct node *:8]%mF2310:a := [void * ()(unsigned int):0]malloc(16U)
+		[bool:1]%r1048577 := ([struct node *:8]%mF2310:a == NULL)
+		if ([bool:1]%r1048577)
+			goto L3
+		else
+			goto L4
+
+	L3:
+		[void ()(int):0]exit(1)
+		abort
+
+	L4:
+		[struct node *:8]%mF2312:p := [struct node *:8]%mF2310:a
+		goto L5
+
+	L6:
+		[bool:1]%r1048578 := ([int:4]%mF2309:flag != 0)
+		if ([bool:1]%r1048578)
+			goto L7
+		else
+			goto L8
+
+	L7:
+		[int:4]%mF2312:p->[+0]h := 1
+		[int:4]%mF2309:flag := 0
+		goto L9
+
+	L8:
+		[int:4]%mF2312:p->[+0]h := 2
+		[int:4]%mF2309:flag := 1
+		goto L9
+
+	L9:
+		[struct node *:8]%mF2311:t := [void * ()(unsigned int):0]malloc(16U)
+		[bool:1]%r1048579 := ([struct node *:8]%mF2311:t == NULL)
+		if ([bool:1]%r1048579)
+			goto L10
+		else
+			goto L11
+
+	L10:
+		[void ()(int):0]exit(1)
+		abort
+
+	L11:
+		[struct node *:8]%mF2312:p->[+8]n := [struct node *:8]%mF2311:t
+		[struct node *:8]%mF2312:p := [struct node *:8]%mF2312:p->[+8]n
+		goto L5
+
+	L5:
+		[int:4]%r2328 := [int ()():0]__VERIFIER_nondet_int()
+		[bool:1]%r1048580 := ([int:4]%r2328 != 0)
+		if ([bool:1]%r1048580)
+			goto L6
+		else
+			goto L12
+
+	L12:
+		[int:4]%mF2312:p->[+0]h := 3
+		[struct node *:8]%mF2312:p := [struct node *:8]%mF2310:a
+		[int:4]%mF2309:flag := 1
+		goto L13
+
+	L14:
+		[bool:1]%r1048581 := ([int:4]%mF2309:flag != 0)
+		if ([bool:1]%r1048581)
+			goto L15
+		else
+			goto L16
+
+	L15:
+		[int:4]%mF2309:flag := 0
+		[int:4]%r2331 := [int:4]%mF2312:p->[+0]h
+		[bool:1]%r1048582 := ([int:4]%r2331 != 1)
+		if ([bool:1]%r1048582)
+			goto L17
+		else
+			goto L18
+
+	L17:
+		goto L19
+
+	L16:
+		[int:4]%mF2309:flag := 1
+		[int:4]%r2335 := [int:4]%mF2312:p->[+0]h
+		[bool:1]%r1048583 := ([int:4]%r2335 != 2)
+		if ([bool:1]%r1048583)
+			goto L20
+		else
+			goto L18
+
+	L20:
+		goto L19
+
+	L18:
+		[struct node *:8]%mF2312:p := [struct node *:8]%mF2312:p->[+8]n
+		goto L13
+
+	L13:
+		[int:4]%r2338 := [int:4]%mF2312:p->[+0]h
+		[bool:1]%r1048584 := ([int:4]%r2338 != 3)
+		if ([bool:1]%r1048584)
+			goto L14
+		else
+			goto L21
+
+	L21:
+		[int:4]%r2339 := 0
+		goto L22
+
+	L19:
+	ERROR:
+		[void ()():0]__VERIFIER_error()
+		abort
+
+	L22:
+		ret [int:4]%r2339
+
+

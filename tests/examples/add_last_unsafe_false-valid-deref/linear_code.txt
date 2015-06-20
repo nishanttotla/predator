@@ -1,0 +1,65 @@
+[int ()():0]main():
+		goto L1
+
+	L1:
+		[int:4]%mF2303:length := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048577 := ([int:4]%mF2303:length <= 0)
+		if ([bool:1]%r1048577)
+			goto L2
+		else
+			goto L3
+
+	L2:
+		[int:4]%mF2303:length := 1
+		goto L3
+
+	L3:
+		[unsigned int:8]%r2312 := [int:4]%mF2303:length
+		[int *:8]%mF2304:arr := [void * ()(unsigned int):0]__builtin_alloca([unsigned int:8]%r2312)
+		[bool:1]%r1048578 := ([int *:8]%mF2304:arr == NULL)
+		if ([bool:1]%r1048578)
+			goto L4
+		else
+			goto L5
+
+	L4:
+		[int:4]%r2315 := 0
+		goto L6
+
+	L5:
+		[int *:8]%mF2305:a := [int *:8]%mF2304:arr
+		goto L7
+
+	L8:
+		[int:4]%r2316 := [int:4]*%mF2305:a
+		[unsigned int:8]%r2317 := [int:4]%mF2303:length
+		[unsigned int:8]%r2318 := ([unsigned int:8]%r2317 * 4U)
+		[unsigned int:8]%r2319 := ([unsigned int:8]%r2318 + (-4U))
+		[int *:8]%r2320 := ([int *:8]%mF2304:arr [ptr]+ [unsigned int:8]%r2319)
+		[int:4]%r2321 := [int:4]*%r2320
+		[int:4]%r2322 := ([int:4]%r2316 + [int:4]%r2321)
+		[int:4]*%mF2305:a := [int:4]%r2322
+		[int *:8]%mF2305:a := ([int *:8]%mF2305:a [ptr]+ 4U)
+		goto L7
+
+	L7:
+		[int:4]%r2323 := [int:4]*%mF2305:a
+		[unsigned int:8]%r2324 := [int:4]%mF2303:length
+		[unsigned int:8]%r2325 := ([unsigned int:8]%r2324 * 4U)
+		[unsigned int:8]%r2326 := ([unsigned int:8]%r2325 + (-4U))
+		[int *:8]%r2327 := ([int *:8]%mF2304:arr [ptr]+ [unsigned int:8]%r2326)
+		[int:4]%r2328 := [int:4]*%r2327
+		[bool:1]%r1048579 := ([int:4]%r2323 != [int:4]%r2328)
+		if ([bool:1]%r1048579)
+			goto L8
+		else
+			goto L9
+
+	L9:
+		[int:4]%r2315 := 0
+		goto L6
+
+	L6:
+		ret [int:4]%r2315
+
+

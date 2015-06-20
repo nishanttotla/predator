@@ -1,0 +1,113 @@
+[int ()():0]main():
+		goto L1
+
+	L1:
+		[int:4]%mF2304:length := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048577 := ([int:4]%mF2304:length <= 0)
+		if ([bool:1]%r1048577)
+			goto L2
+		else
+			goto L3
+
+	L3:
+		[unsigned int:4]%mF2319:length.0 := [int:4]%mF2304:length
+		[bool:1]%r1048578 := ([unsigned int:4]%mF2319:length.0 > 536870910U)
+		if ([bool:1]%r1048578)
+			goto L2
+		else
+			goto L4
+
+	L2:
+		[int:4]%mF2304:length := 1
+		goto L4
+
+	L4:
+		[unsigned int:8]%r2320 := [int:4]%mF2304:length
+		[int *:8]%mF2305:arr := [void * ()(unsigned int):0]__builtin_alloca([unsigned int:8]%r2320)
+		[bool:1]%r1048579 := ([int *:8]%mF2305:arr == NULL)
+		if ([bool:1]%r1048579)
+			goto L5
+		else
+			goto L6
+
+	L5:
+		[int:4]%r2323 := 0
+		goto L7
+
+	L6:
+		[int:4]%mF2301:i := 0
+		goto L8
+
+	L9:
+		[int:4]%mF2303:val := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048580 := ([int:4]%mF2303:val < 0)
+		if ([bool:1]%r1048580)
+			goto L10
+		else
+			goto L11
+
+	L10:
+		[int:4]%mF2303:val := 0
+		goto L11
+
+	L11:
+		[unsigned int:8]%r2326 := [int:4]%mF2301:i
+		[unsigned int:8]%r2327 := ([unsigned int:8]%r2326 * 4U)
+		[int *:8]%r2328 := ([int *:8]%mF2305:arr [ptr]+ [unsigned int:8]%r2327)
+		[int:4]*%r2328 := [int:4]%mF2303:val
+		[int:4]%mF2301:i := ([int:4]%mF2301:i + 1)
+		goto L8
+
+	L8:
+		[bool:1]%r1048581 := ([int:4]%mF2301:i < [int:4]%mF2304:length)
+		if ([bool:1]%r1048581)
+			goto L9
+		else
+			goto L12
+
+	L12:
+		[int:4]%mF2302:j := 0
+		goto L13
+
+	L14:
+		goto L15
+
+	L16:
+		[unsigned int:8]%r2329 := [int:4]%mF2302:j
+		[unsigned int:8]%r2330 := ([unsigned int:8]%r2329 * 4U)
+		[int *:8]%r2331 := ([int *:8]%mF2305:arr [ptr]+ [unsigned int:8]%r2330)
+		[int:4]%r2332 := [int:4]*%r2331
+		[int:4]%r2333 := ([int:4]%r2332 + (-1))
+		[int:4]*%r2331 := [int:4]%r2333
+		goto L15
+
+	L15:
+		[unsigned int:8]%r2334 := [int:4]%mF2302:j
+		[unsigned int:8]%r2335 := ([unsigned int:8]%r2334 * 4U)
+		[int *:8]%r2336 := ([int *:8]%mF2305:arr [ptr]+ [unsigned int:8]%r2335)
+		[int:4]%r2337 := [int:4]*%r2336
+		[bool:1]%r1048582 := ([int:4]%r2337 > 0)
+		if ([bool:1]%r1048582)
+			goto L16
+		else
+			goto L17
+
+	L17:
+		[int:4]%mF2302:j := ([int:4]%mF2302:j + 1)
+		goto L13
+
+	L13:
+		[bool:1]%r1048583 := ([int:4]%mF2302:j < [int:4]%mF2304:length)
+		if ([bool:1]%r1048583)
+			goto L14
+		else
+			goto L18
+
+	L18:
+		[int:4]%r2323 := 0
+		goto L7
+
+	L7:
+		ret [int:4]%r2323
+
+

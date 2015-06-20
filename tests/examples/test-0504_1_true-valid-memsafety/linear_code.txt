@@ -1,0 +1,161 @@
+[int ()():0]main():
+		goto L1
+
+	L1:
+		[struct T2 *:8]%mF2310:first := NULL
+		[struct T2 *:8]%mF2311:last := NULL
+		[int:4]%mF2312:c1 := 0
+		[int:4]%mF2313:c2 := 0
+		goto L2
+
+	L3:
+		[int:4]%mF2312:c1 := ([int:4]%mF2312:c1 + 1)
+		[struct T2 *:8]%mF2314:x := [void * ()(unsigned int):0]malloc(40U)
+		[bool:1]%r1048577 := ([struct T2 *:8]%mF2314:x == NULL)
+		if ([bool:1]%r1048577)
+			goto L4
+		else
+			goto L5
+
+	L4:
+		[void ()(void):0]abort()
+		abort
+
+	L5:
+		[struct T2 *:8]%mF2314:x->[+24]next := NULL
+		[struct T2 *:8]%mF2314:x->[+32]prev := NULL
+		[struct T *:8]%r2334 := [struct T *:8]&%mF2314:x->[+0]head
+		[struct T *:8]%mF2314:x->[+0]head.next := [struct T *:8]%r2334
+		[struct T *:8]%r2335 := [struct T *:8]&%mF2314:x->[+0]head
+		[struct T *:8]%mF2314:x->[+8]head.prev := [struct T *:8]%r2335
+		[int:4]%r2336 := ([int:4]%mF2312:c1 * 2)
+		[int:4]%mF2314:x->[+16]head.data := [int:4]%r2336
+		[struct T *:8]%mF2315:y := NULL
+		goto L6
+
+	L7:
+		[int:4]%mF2313:c2 := ([int:4]%mF2313:c2 + 1)
+		[struct T *:8]%mF2315:y := [void * ()(unsigned int):0]malloc(24U)
+		[bool:1]%r1048578 := ([struct T *:8]%mF2315:y == NULL)
+		if ([bool:1]%r1048578)
+			goto L8
+		else
+			goto L9
+
+	L8:
+		[void ()(void):0]abort()
+		abort
+
+	L9:
+		[struct T *:8]%r2339 := [struct T *:8]%mF2314:x->[+0]head.next
+		[struct T *:8]%mF2315:y->[+0]next := [struct T *:8]%r2339
+		[struct T *:8]%r2340 := [struct T *:8]%mF2315:y->[+0]next
+		[struct T *:8]%r2340->[+8]prev := [struct T *:8]%mF2315:y
+		[struct T *:8]%r2341 := [struct T *:8]&%mF2314:x->[+0]head
+		[struct T *:8]%mF2315:y->[+8]prev := [struct T *:8]%r2341
+		[int:4]%r2342 := ([int:4]%mF2313:c2 * [int:4]%mF2312:c1)
+		[int:4]%mF2315:y->[+16]data := [int:4]%r2342
+		[struct T *:8]%mF2314:x->[+0]head.next := [struct T *:8]%mF2315:y
+		[struct T *:8]%mF2315:y := NULL
+		goto L6
+
+	L6:
+		[bool:1]%r1048579 := ([int:4]%mF2313:c2 <= 2)
+		if ([bool:1]%r1048579)
+			goto L10
+		else
+			goto L11
+
+	L10:
+		[int:4]%r2344 := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048580 := ([int:4]%r2344 != 0)
+		if ([bool:1]%r1048580)
+			goto L7
+		else
+			goto L11
+
+	L11:
+		[int:4]%mF2313:c2 := 0
+		[bool:1]%r1048581 := ([struct T2 *:8]%mF2310:first == NULL)
+		if ([bool:1]%r1048581)
+			goto L12
+		else
+			goto L13
+
+	L12:
+		[struct T2 *:8]%mF2310:first := [struct T2 *:8]%mF2314:x
+		[struct T2 *:8]%mF2311:last := [struct T2 *:8]%mF2314:x
+		goto L2
+
+	L13:
+		[struct T2 *:8]%mF2311:last->[+24]next := [struct T2 *:8]%mF2314:x
+		[struct T2 *:8]%mF2314:x->[+32]prev := [struct T2 *:8]%mF2311:last
+		[struct T2 *:8]%mF2311:last := [struct T2 *:8]%mF2314:x
+		goto L2
+
+	L2:
+		[bool:1]%r1048582 := ([int:4]%mF2312:c1 <= 4)
+		if ([bool:1]%r1048582)
+			goto L14
+		else
+			goto L15
+
+	L14:
+		[int:4]%r2349 := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048583 := ([int:4]%r2349 != 0)
+		if ([bool:1]%r1048583)
+			goto L3
+		else
+			goto L15
+
+	L15:
+		goto L16
+
+	L17:
+		[int:4]%mF2312:c1 := ([int:4]%mF2312:c1 + (-1))
+		[struct T2 *:8]%mF2322:x := [struct T2 *:8]%mF2310:first
+		[struct T2 *:8]%mF2310:first := [struct T2 *:8]%mF2310:first->[+24]next
+		[struct T *:8]%mF2323:y := [struct T *:8]%mF2322:x->[+0]head.next
+		goto L18
+
+	L19:
+		[struct T *:8]%mF2324:z := [struct T *:8]%mF2323:y
+		[struct T *:8]%mF2323:y := [struct T *:8]%mF2323:y->[+0]next
+		[int:4]%r2350 := [int:4]%mF2324:z->[+16]data
+		[bool:1]%r1048584 := ([int:4]%r2350 <= 15)
+		if ([bool:1]%r1048584)
+			goto L20
+		else
+			goto L18
+
+	L20:
+		[void ()(void *):0]free([struct T *:8]%mF2324:z)
+		goto L18
+
+	L18:
+		[struct T *:8]%r2353 := [struct T *:8]&%mF2322:x->[+0]head
+		[bool:1]%r1048585 := ([struct T *:8]%r2353 != [struct T *:8]%mF2323:y)
+		if ([bool:1]%r1048585)
+			goto L19
+		else
+			goto L21
+
+	L21:
+		[void ()(void *):0]free([struct T2 *:8]%mF2322:x)
+		goto L16
+
+	L16:
+		[bool:1]%r1048586 := ([int:4]%mF2312:c1 > 0)
+		if ([bool:1]%r1048586)
+			goto L17
+		else
+			goto L22
+
+	L22:
+		[int:4]%r2354 := 0
+		goto L23
+
+	L23:
+		ret [int:4]%r2354
+
+

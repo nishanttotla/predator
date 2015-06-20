@@ -1,0 +1,8 @@
+>>>execute
+>>>execTopCall
+>>>execFnc
+>>>enterCall
+location is test.c:6:6: 
+op1 is #2301:num
+op2 is (int)0
+

@@ -1,0 +1,45 @@
+[int ()():0]main():
+		goto L1
+
+	L1:
+		[int:4]%mF2301:length := [int ()(void):0]__VERIFIER_nondet_int()
+		[bool:1]%r1048577 := ([int:4]%mF2301:length <= 0)
+		if ([bool:1]%r1048577)
+			goto L2
+		else
+			goto L3
+
+	L3:
+		[bool:1]%r1048578 := ([int:4]%mF2301:length > 1000)
+		if ([bool:1]%r1048578)
+			goto L2
+		else
+			goto L4
+
+	L2:
+		[int:4]%mF2301:length := 5
+		goto L4
+
+	L4:
+		[unsigned int:8]%r2307 := [int:4]%mF2301:length
+		[unsigned int:8]%r2308 := ([unsigned int:8]%r2307 * 4U)
+		[int *:8]%mF2302:arr := [void * ()(unsigned int):0]__builtin_alloca([unsigned int:8]%r2308)
+		[bool:1]%r1048579 := ([int *:8]%mF2302:arr == NULL)
+		if ([bool:1]%r1048579)
+			goto L5
+		else
+			goto L6
+
+	L5:
+		[int:4]%r2311 := 0
+		goto L7
+
+	L6:
+		[int:4]*%mF2302:arr := 0
+		[int:4]%r2311 := 0
+		goto L7
+
+	L7:
+		ret [int:4]%r2311
+
+

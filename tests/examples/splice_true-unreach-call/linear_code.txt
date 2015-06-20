@@ -1,0 +1,183 @@
+[void ()(int):0]exit(%arg1: [int:4]%mF2299:s):
+		goto L1
+
+	L1:
+	_EXIT:
+		goto L1
+
+[int ()():0]main():
+		goto L2
+
+	L2:
+		[int:4]%mF2309:flag := 1
+		[struct node *:8]%mF2310:a := [void * ()(unsigned int):0]malloc(16U)
+		[bool:1]%r1048577 := ([struct node *:8]%mF2310:a == NULL)
+		if ([bool:1]%r1048577)
+			goto L3
+		else
+			goto L4
+
+	L3:
+		[void ()(int):0]exit(1)
+		abort
+
+	L4:
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2310:a
+		goto L5
+
+	L6:
+		[bool:1]%r1048578 := ([int:4]%mF2309:flag != 0)
+		if ([bool:1]%r1048578)
+			goto L7
+		else
+			goto L8
+
+	L7:
+		[int:4]%mF2316:p->[+0]h := 1
+		[int:4]%mF2309:flag := 0
+		goto L9
+
+	L8:
+		[int:4]%mF2316:p->[+0]h := 2
+		[int:4]%mF2309:flag := 1
+		goto L9
+
+	L9:
+		[struct node *:8]%mF2311:t := [void * ()(unsigned int):0]malloc(16U)
+		[bool:1]%r1048579 := ([struct node *:8]%mF2311:t == NULL)
+		if ([bool:1]%r1048579)
+			goto L10
+		else
+			goto L11
+
+	L10:
+		[void ()(int):0]exit(1)
+		abort
+
+	L11:
+		[struct node *:8]%mF2316:p->[+8]n := [struct node *:8]%mF2311:t
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2316:p->[+8]n
+		goto L5
+
+	L5:
+		[int:4]%r2338 := [int ()():0]__VERIFIER_nondet_int()
+		[bool:1]%r1048580 := ([int:4]%r2338 != 0)
+		if ([bool:1]%r1048580)
+			goto L6
+		else
+			goto L12
+
+	L12:
+		[int:4]%mF2316:p->[+0]h := 3
+		[int:4]%r2339 := [int:4]%mF2310:a->[+0]h
+		[bool:1]%r1048581 := ([int:4]%r2339 == 3)
+		if ([bool:1]%r1048581)
+			goto L13
+		else
+			goto L14
+
+	L13:
+		[int:4]%r2342 := 0
+		goto L15
+
+	L14:
+		[int:4]%mF2309:flag := 1
+		[struct node *:8]%mF2312:l1 := NULL
+		[struct node *:8]%mF2313:l2 := NULL
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2310:a
+		goto L16
+
+	L17:
+		[struct node *:8]%mF2311:t := [struct node *:8]%mF2316:p
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2316:p->[+8]n
+		[bool:1]%r1048582 := ([int:4]%mF2309:flag != 0)
+		if ([bool:1]%r1048582)
+			goto L18
+		else
+			goto L19
+
+	L18:
+		[struct node *:8]%mF2311:t->[+8]n := [struct node *:8]%mF2312:l1
+		[struct node *:8]%mF2312:l1 := [struct node *:8]%mF2311:t
+		[int:4]%mF2309:flag := 0
+		goto L16
+
+	L19:
+		[struct node *:8]%mF2311:t->[+8]n := [struct node *:8]%mF2313:l2
+		[struct node *:8]%mF2313:l2 := [struct node *:8]%mF2311:t
+		[int:4]%mF2309:flag := 1
+		goto L16
+
+	L16:
+		[int:4]%r2346 := [int:4]%mF2316:p->[+0]h
+		[bool:1]%r1048583 := ([int:4]%r2346 != 3)
+		if ([bool:1]%r1048583)
+			goto L17
+		else
+			goto L20
+
+	L20:
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2312:l1
+		goto L21
+
+	L22:
+		[int:4]%r2347 := [int:4]%mF2316:p->[+0]h
+		[bool:1]%r1048584 := ([int:4]%r2347 != 1)
+		if ([bool:1]%r1048584)
+			goto L23
+		else
+			goto L24
+
+	L23:
+		goto L25
+
+	L24:
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2316:p->[+8]n
+		goto L21
+
+	L21:
+		[bool:1]%r1048585 := ([struct node *:8]%mF2316:p != NULL)
+		if ([bool:1]%r1048585)
+			goto L22
+		else
+			goto L26
+
+	L26:
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2313:l2
+		goto L27
+
+	L28:
+		[int:4]%r2350 := [int:4]%mF2316:p->[+0]h
+		[bool:1]%r1048586 := ([int:4]%r2350 != 2)
+		if ([bool:1]%r1048586)
+			goto L29
+		else
+			goto L30
+
+	L29:
+		goto L25
+
+	L30:
+		[struct node *:8]%mF2316:p := [struct node *:8]%mF2316:p->[+8]n
+		goto L27
+
+	L27:
+		[bool:1]%r1048587 := ([struct node *:8]%mF2316:p != NULL)
+		if ([bool:1]%r1048587)
+			goto L28
+		else
+			goto L31
+
+	L31:
+		[int:4]%r2342 := 0
+		goto L15
+
+	L25:
+	ERROR:
+		[void ()():0]__VERIFIER_error()
+		abort
+
+	L15:
+		ret [int:4]%r2342
+
+

@@ -1,0 +1,69 @@
+/home/davidson/crowdsrc/predatorGit/sl_build/libsl.so: debug: initializing code listener [SHA1 6cdeb3fd12ddf4826f8b7bf0924c680d2639d1ac]
+/home/davidson/crowdsrc/predatorGit/sl_build/libsl.so: debug: plug-in is compiled against gcc 4.9, built at 20141104, conf: ../src/configure -v --with-pkgversion='Ubuntu 4.9.2-0ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.9/README.Bugs --enable-languages=c,c++,java,go,d,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.9 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.9 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --with-system-zlib --disable-browser-plugin --enable-java-awt=gtk --enable-gtk-cairo --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-4.9-amd64/jre --enable-java-home --with-jvm-root-dir=/usr/lib/jvm/java-1.5.0-gcj-4.9-amd64 --with-jvm-jar-dir=/usr/lib/jvm-exports/java-1.5.0-gcj-4.9-amd64 --with-arch-directory=amd64 --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --enable-multilib --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+/home/davidson/crowdsrc/predatorGit/sl_build/libsl.so: debug: now going to be loaded into gcc 4.9, built at 20141104, conf: ../src/configure -v --with-pkgversion='Ubuntu 4.9.2-0ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.9/README.Bugs --enable-languages=c,c++,java,go,d,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.9 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.9 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --with-system-zlib --disable-browser-plugin --enable-java-awt=gtk --enable-gtk-cairo --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-4.9-amd64/jre --enable-java-home --with-jvm-root-dir=/usr/lib/jvm/java-1.5.0-gcj-4.9-amd64 --with-jvm-jar-dir=/usr/lib/jvm-exports/java-1.5.0-gcj-4.9-amd64 --with-arch-directory=amd64 --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --enable-multilib --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+/home/davidson/crowdsrc/predatorGit/cl/cl_dotgen.cc:226: debug: ClDotGenerator: created dot file 'gen_dot.dot' [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_typedot.cc:196: debug: ClTypeDotGenerator: created dot file 'type_graph.dot' [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:50: debug: ClEasy initialized: "" [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/sl_build/libsl.so: debug: plug-in successfully initialized
+/home/davidson/crowdsrc/predatorGit/cl/cl_dotgen.cc:226: debug: ClDotGenerator: created dot file 'add_last-alloca_true-valid-memsafety.c.dot' [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_dotgen.cc:226: debug: ClDotGenerator: created dot file 'add_last-alloca_true-valid-memsafety.c-main.dot' [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:64: debug: building call-graph... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/callgraph.cc:182: debug: buildCallGraph() took 0.000 s [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:68: debug: scanning CFG for loop-closing edges... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/loopscan.cc:161: debug: findLoopClosingEdges() took 0.000 s [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:72: debug: perform points-to analysis... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/pointsto_fics.cc:427: debug: PT: ERROR: unhandled instruction type: #2315 = (#2314 * (int)4U) [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/pointsto.cc:674: debug: pointsToAnalyse() took 0.000 s [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:76: debug: killing local variables... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/killer.cc:659: debug: killLocalVariables() took 0.000 s [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:80: debug: ClEasy is calling the analyzer... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/sl/cl_symexec.cc:152: debug: looking for 'main()' at gl scope... [internal location] [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:4:5: debug: creating fresh initial state for main()... [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:4:5: debug: SymCallCache is looking for main()... [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:4:5: debug: >>> entering main() [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:6:7: debug: ___ entering L1, main(), 0 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:6:7: debug: !!! executing insn #0 ... #2303:length = __VERIFIER_nondet_int () [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:6:7: debug: executing __VERIFIER_nondet_int() [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:6: debug: !!! executing insn #1 ... #1048577 = (#2303:length <= (int)0) [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:6: debug: !!! executing insn #2 ... if (#1048577) goto L2 else L3 [-fplugin=libsl.so]
+This actually happens atadd_last-alloca_true-valid-memsafety.c:7:6: 
+
+VAL FALSE (via assume)
+add_last-alloca_true-valid-memsafety.c:7:6: debug: .F. CL_INSN_COND got VAL_FALSE [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:6: debug: +++ block L3 updated: 1 heaps pending, 1 heaps total [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:6: debug: ___ completed batch for L1, main(), 1 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:28: debug: ___ entering L3, main(), 0 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:28: debug: !!! executing insn #0 ... #2313:length.0 = #2303:length [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:18: debug: !!! executing insn #1 ... #1048578 = (#2313:length.0 > (int)536870910U) [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:18: debug: !!! executing insn #2 ... if (#1048578) goto L2 else L4 [-fplugin=libsl.so]
+This actually happens atadd_last-alloca_true-valid-memsafety.c:7:18: 
+
+VAL FALSE (via assume)
+add_last-alloca_true-valid-memsafety.c:7:18: debug: .F. CL_INSN_COND got VAL_FALSE [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:18: debug: +++ block L4 updated: 1 heaps pending, 1 heaps total [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:7:18: debug: ___ completed batch for L3, main(), 1 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:14: debug: ___ entering L4, main(), 0 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:14: debug: !!! executing insn #0 ... #2314 = #2303:length [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:14: debug: !!! executing insn #1 ... #2315 = (#2314 * (int)4U) [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:8: debug: !!! executing insn #2 ... #2304:arr = __builtin_alloca (#2315) [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:8: error: size arg of __builtin_alloca() is not a known integer [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/sl/symtrace.cc:516: debug: plotTraceCore() is traversing a trace graph... [internal location] [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/sl/symtrace.cc:580: note: trace graph dumped to 'symtrace-0000.dot' [internal location] [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:8: note: writing heap graph to 'trace-state-0000.dot'... [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:8: note: writing heap graph to 'error-state-0000.dot'... [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:10:8: debug: ___ completed batch for L4, main(), 0 basic block(s) in the queue [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:4:5: debug: <<< leaving main() [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:4:5: debug: (g) looking for gl junk... [-fplugin=libsl.so]
+/home/davidson/crowdsrc/predatorGit/cl/cl_easy.cc:83: note: clEasyRun() took 0.000 s [internal location] [-fplugin=libsl.so]
+add_last-alloca_true-valid-memsafety.c:18:1: error: /home/davidson/crowdsrc/predatorGit/sl_build/libsl.so has detected some errors
+ }
+ ^
+opening file assumptions.txt
+step from add_last-alloca_true-valid-memsafety.c:7:6: (if (#1048577) goto L2 else L3)
+	true insn add_last-alloca_true-valid-memsafety.c:8:10: (#2303:length = (int)1)
+	false insn add_last-alloca_true-valid-memsafety.c:7:28: (#2313:length.0 = #2303:length)
+
+step from add_last-alloca_true-valid-memsafety.c:7:18: (if (#1048578) goto L2 else L4)
+	true insn add_last-alloca_true-valid-memsafety.c:8:10: (#2303:length = (int)1)
+	false insn add_last-alloca_true-valid-memsafety.c:10:14: (#2314 = #2303:length)
+
