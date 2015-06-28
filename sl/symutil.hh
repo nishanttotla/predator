@@ -30,6 +30,7 @@
 
 #include <cl/code_listener.h>
 #include <cl/clutil.hh>
+#include <cl/storage.hh>
 
 #include "symheap.hh"
 #include "util.hh"
@@ -45,6 +46,17 @@ inline TValId boolToVal(const bool b)
         ? VAL_TRUE
         : VAL_FALSE;
 }
+
+struct ProgramPoint{
+	public:
+		ProgramPoint(const char * file, int line, int column, int visit);
+		struct cl_loc * loc;
+		int visit;
+};
+
+// DREW: build a programPt from a text string, such as the one provided
+// in the heaps.txt
+struct ProgramPoint * ptFromLine(std::string line);
 
 /// extract integral constant from the given value if possible, fail otherwise
 bool numFromVal(IR::TInt *pDst, const SymHeapCore &, TValId);

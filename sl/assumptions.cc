@@ -96,7 +96,10 @@ TValId Assumptions::valFromTrace(const CodeStorage::Insn * insn){
 */
 
 TValId Assumptions::stepBranch(const CodeStorage::Insn * insn){
-	std::cerr << "[stepBranch] advancing from " << judgementIdx << "\n";
+	std::cerr << "[stepBranch] advancing from " << judgementIdx << std::endl;
+	if (judgementIdx >= linearJudgements.size()){
+		return VAL_INVALID;
+	}
 
 	Judgement * nextJudgement = linearJudgements[judgementIdx];
 	judgementIdx++;

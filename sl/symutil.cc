@@ -33,6 +33,35 @@
 
 #include <boost/foreach.hpp>
 
+ProgramPoint::ProgramPoint(const char * file, int line, int column, int visit){
+	struct cl_loc * location = new struct cl_loc();
+	location->file = file;
+	location->line = line;
+	location->column = column;
+	this->loc = location;
+	this->visit = visit;
+}
+
+struct ProgramPoint * ptFromLine(std::string line){
+	std::stringstream lineAsStream(line);
+	std::string srcFile;
+	std::string srcLine;
+	std::string srcChar;
+	std::string visitStr;
+
+	getline(lineAsStream, srcFile, ':');
+	getline(lineAsStream, srcLine, ':');
+	getline(lineAsStream, srcChar, ':');
+	getline(lineAsStream, visitStr);
+
+	int lineVal = atoi(srcLine.c_str());
+	int col = atoi(srcChar.c_str());
+	int visitVal = atoi(visitStr.c_str());
+		
+	struct ProgramPoint * pt = new struct ProgramPoint(srcFile.c_str(), lineVal, col, visitVal);
+	return pt;
+}
+
 bool numFromVal(IR::TInt *pDst, const SymHeapCore &sh, const TValId val)
 {
     switch (val) {

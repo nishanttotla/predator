@@ -40,7 +40,7 @@ class Assumptions{
 		class Judgement{
 			public:
 				struct cl_loc * loc;
-				TValId value;
+				TValId value; // Truth value: VAL_TRUE, VAL_FALSE, VAL_INVALID
 				Judgement(std::string);
 		};
 

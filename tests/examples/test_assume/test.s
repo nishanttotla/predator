@@ -13,7 +13,7 @@ main:
 	subq	$16, %rsp
 	call	__VERIFIER_nondet_int
 	movl	%eax, -12(%rbp)
-	cmpl	$0, -12(%rbp)
+	cmpl	$5, -12(%rbp)
 	jle	.L2
 	movq	$0, -8(%rbp)
 	movq	-8(%rbp), %rax

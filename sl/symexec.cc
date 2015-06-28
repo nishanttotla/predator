@@ -26,6 +26,7 @@
 #include <cl/memdebug.hh>
 #include <cl/storage.hh>
 
+
 #include "fixed_point_proxy.hh"
 #include "glconf.hh"
 #include "sigcatch.hh"
@@ -38,12 +39,18 @@
 #include "symtrace.hh"
 #include "util.hh"
 
+#include "assumptions.hh"
+#include "heapOracle.hh"
+
 #include <queue>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 
 #include <boost/foreach.hpp>
+
+static Assumptions assumptions("assumptions.txt");
+static HeapOracle heapOracle("heaps.txt");
 
 LOCAL_DEBUG_PLOTTER(nondetCond, DEBUG_SE_NONDET_COND)
 
@@ -525,6 +532,50 @@ void SymExecEngine::execCondInsn()
         LDP_PLOT(nondetCond, sh);
     }
 
+		#if 1
+		{ //DREW
+			{
+			std::ostringstream outStream;
+			outStream << "Checking path assumption at " << *lw_ << "\n";
+			fprintf(stderr, "%s\n", outStream.str().c_str());
+			}
+			//const TValId assumedVal = assumptions.valFromTrace(insnCnd);
+			const TValId assumedVal = assumptions.stepBranch(insnCnd);
+			switch (assumedVal) {
+					case VAL_TRUE:
+							fprintf(stderr, "VAL TRUE (via assume)\n");
+							sh.traceUpdate(new Trace::CondNode(sh.traceNode(),
+													insnCmp, insnCnd, /* det */ true, /* branch */ true));
+
+							CL_DEBUG_MSG(lw_, ".T. CL_INSN_COND got VAL_TRUE");
+							proc.killInsn(*insnCmp);
+							proc.killPerTarget(*insnCnd, /* then label */ 0);
+							this->updateState(sh, insnCnd->targets[/* then label */ 0]);
+							return;
+
+					case VAL_FALSE:
+							fprintf(stderr, "VAL FALSE (via assume)\n");
+							sh.traceUpdate(new Trace::CondNode(sh.traceNode(),
+													insnCmp, insnCnd, /* det */ true, /* branch */ false));
+
+							CL_DEBUG_MSG(lw_, ".F. CL_INSN_COND got VAL_FALSE");
+							proc.killInsn(*insnCmp);
+							proc.killPerTarget(*insnCnd, /* else label */ 1);
+							this->updateState(sh, insnCnd->targets[/* else label */ 1]);
+							return;
+
+					default:
+							{
+								std::ostringstream outStream;
+								outStream << "no path assumption at " << *lw_ << "\n";
+								fprintf(stderr, "%s\n", outStream.str().c_str());
+							}
+							// we need to update both targets
+							break;
+			}
+		}
+		#endif
+
     CL_DEBUG_MSG(lw_, "?T? CL_INSN_COND updates TRUE branch");
     this->updateStateInBranch(sh, true,  *insnCmp, *insnCnd, v1, v2);
 
@@ -579,6 +630,8 @@ bool /* handled */ SymExecEngine::execNontermInsn()
 
     // drop the unnecessary Trace::CloneNode node in the trace graph
     Trace::waiveCloneOperation(sh);
+
+		heapOracle.step(sh, insn);
 
     // execute the instruction
     if (!core.exec(nextLocalState_, *insn)) {

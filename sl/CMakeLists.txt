@@ -46,6 +46,7 @@ add_library(predator STATIC
     adt_op_match.cc
     adt_op_meta.cc
     adt_op_replace.cc
+		assumptions.cc
     cl_symexec.cc
     cont_shape.cc
     cont_shape_seq.cc
@@ -54,7 +55,9 @@ add_library(predator STATIC
     fixed_point_proxy.cc
     fixed_point_rewrite.cc
     glconf.cc
+		heapOracle.cc
     intrange.cc
+		oracleLookup.cc
     plotenum.cc
     prototype.cc
     shape.cc
