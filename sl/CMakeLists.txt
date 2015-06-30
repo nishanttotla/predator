@@ -62,6 +62,7 @@ add_library(predator STATIC
     prototype.cc
     shape.cc
     sigcatch.cc
+		SimulationChecker.cc
     symabstract.cc
     symbin.cc
     symbt.cc

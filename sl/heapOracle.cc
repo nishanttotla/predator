@@ -32,6 +32,16 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/algorithm/string.hpp>
 
+bool operator<(const AtomicProposition& l, const AtomicProposition& r )
+{
+	return l.text < r.text;
+}
+
+bool operator==(const AtomicProposition& l, const AtomicProposition& r )
+{
+	return l.text == r.text;
+}
+
 HeapOracle::HeapOracle(std::string filename){
 	readFile(filename);
 }
@@ -58,7 +68,7 @@ void HeapOracle::readFile(std::string filename){
 		fprintf(stderr, "pt line is %s %d %d %d\n", 
 			pt->loc->file, pt->loc->line, pt->loc->column, pt->visit);
 		fprintf(stderr, "dot file is %s\n", dotFile.c_str());
-		HeapModifier * mod = new HeapModifier(dotFile);
+		PatternGraph * mod = new PatternGraph(dotFile);
 	}
 }
 
@@ -71,12 +81,12 @@ void HeapOracle::step(SymHeap& sh, const CodeStorage::Insn * insn){
 	fprintf(stderr, "HeapOracle::step %s\n", stream.str().c_str());
 }
 
-HeapModifier * HeapOracle::modAt(const struct cl_loc * loc){
+PatternGraph * HeapOracle::modAt(const struct cl_loc * loc){
 	return NULL;
 }
 
-HeapModifier::HeapModifier(std::string& dotFile){
-	fprintf(stderr, "[HeapModifier::HeapModifier >>>] opening file %s\n", dotFile.c_str());
+PatternGraph::PatternGraph(std::string& dotFile){
+	fprintf(stderr, "[PatternGraph::PatternGraph >>>] opening file %s\n", dotFile.c_str());
 	std::ifstream infile(dotFile);
 	if (!infile.is_open()){
 		fprintf(stderr, "Could not open heap file %s\n", dotFile.c_str());
@@ -130,7 +140,27 @@ HeapModifier::HeapModifier(std::string& dotFile){
 	}
 }
 
-void HeapModifier::parseNode(std::string& line){
+std::vector<PGEdge> PatternGraph::getEdgeList(){
+	std::vector<PGEdge> result;
+
+	std::vector<ModifierNode *>::iterator nItr = nodes.begin();
+	std::vector<ModifierNode *>::iterator nEnd = nodes.end();
+	while(nItr != nEnd){
+		ModifierNode * n = *nItr;
+		std::map<std::string, ModifierNode *>::iterator eItr = n->outEdges.begin();
+		std::map<std::string, ModifierNode *>::iterator eEnd = n->outEdges.end();
+		while (eItr != eEnd){
+			ModifierNode * successor = eItr->second;
+			PGEdge edge(n, successor);
+			result.push_back(edge);
+			++eItr;
+		}
+		++nItr;
+	}
+	return result;
+}
+
+void PatternGraph::parseNode(std::string& line){
 	std::cerr << "node line is: \"" << line << "\"\n";
 	StringVec pieces;
 	boost::algorithm::split( pieces, line, 
@@ -143,7 +173,7 @@ void HeapModifier::parseNode(std::string& line){
 	nodeMap[nodeName] = node;
 }
 
-void HeapModifier::parseEdge(std::string& line){
+void PatternGraph::parseEdge(std::string& line){
 	int annotationIdx = line.find("[");
 	std::string lead = line.substr(0, annotationIdx);
 	boost::algorithm::trim(lead);

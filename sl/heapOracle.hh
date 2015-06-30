@@ -17,8 +17,31 @@
 #include "util.hh"
 
 #include <map>
+#include <set>
+
+class AtomicProposition;
+class ModifierNode;
 
 typedef std::vector< std::string > StringVec;
+typedef std::set<AtomicProposition> APSet;
+typedef std::map<std::string, ModifierNode *> NodeMap;
+
+typedef std::pair<ModifierNode *, ModifierNode *> PGEdge;
+typedef std::pair<PGEdge, bool> CheckedPGEdge;
+
+typedef std::set<PGEdge> PGRelation;
+
+typedef std::pair<ModifierNode *, ModifierNode *> NodePair;
+typedef std::vector<NodePair *> PairVec;
+typedef std::map<APSet, PairVec*> Coloring;
+
+class AtomicProposition{
+	public:
+		std::string text;
+};
+
+extern bool operator<(const AtomicProposition& l, const AtomicProposition& r );
+extern bool operator==(const AtomicProposition& l, const AtomicProposition& r );
 
 class ModifierNode{
 		public:
@@ -26,20 +49,37 @@ class ModifierNode{
 			std::map<std::string, ModifierNode *> inEdges;
 			std::map<std::string, ModifierNode *> outEdges;
 
+			APSet APs;
+
 			ModifierNode(std::string nameIn){
 				this->name = nameIn;
 			}
+
+			bool samePropositions(std::set<AtomicProposition>& props);
 };
 
 //Pattern Graph
-class HeapModifier{
+class PatternGraph{
 	public: 
-		HeapModifier(std::string& dotFile);
+		PatternGraph(std::string& dotFile);
+		std::vector<ModifierNode *> nodes;
+		std::vector<PGEdge> getEdgeList();
+
+		bool hasEdge(ModifierNode * src, ModifierNode * dst){
+			std::map<std::string, ModifierNode *>::iterator itr = src->outEdges.begin();
+			std::map<std::string, ModifierNode *>::iterator end = src->outEdges.end();
+			while(itr != end){
+				if (itr->second == dst){
+					return true;
+				}
+				++itr;
+			}
+			return false;
+		}
 	private:	
 		void parseNode(std::string& line);
 		void parseEdge(std::string& line);
-		std::vector<ModifierNode *> nodes;
-		std::map<std::string, ModifierNode *> nodeMap;
+		NodeMap nodeMap;
 };
 
 class HeapOracle{
@@ -47,13 +87,13 @@ class HeapOracle{
 		class HeapInjection{
 			public:
 				struct cl_loc * loc;
-				HeapModifier * mod;
+				PatternGraph * mod;
 		};
 
 		HeapOracle(std::string filename);
 
 		void step(SymHeap& sh, const CodeStorage::Insn * insn);
-		HeapModifier * modAt(const struct cl_loc * loc);
+		PatternGraph * modAt(const struct cl_loc * loc);
 
 	private:
 		void readFile(std::string filename);
