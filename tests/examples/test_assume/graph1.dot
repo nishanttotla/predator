@@ -1,0 +1,15 @@
+digraph "trace-state-0000" {
+	label=<<FONT POINT-SIZE="18">trace-state-0000</FONT>>;
+	clusterrank=local;
+	labelloc=t;
+	"4" [predicate="true" shape=box, color=blue, fontcolor=blue, style=dotted, label="CL#2303:length [obj = #4] field#6 [size = 4B]"];
+	"9" [shape=box, color=blue, fontcolor=blue, style=dotted, label="CL#2313:length.0 [obj = #9] field#11 [size = 4B]"];
+	"14" [shape=box, color=blue, fontcolor=blue, style=dotted, label="CL#2314 [obj = #14] field#16 [size = 8B]"];
+	"17" [shape=box, color=blue, fontcolor=blue, style=dotted, label="CL#2315 [obj = #17] field#19 [size = 8B]"];
+	"7" [shape=ellipse, penwidth=4, fontcolor=chartreuse2, label="#7 VO_ASSIGNED"];
+	"21" [shape=ellipse, penwidth=2, fontcolor=chartreuse2, label="#21 VO_UNKNOWN"];
+	"4" -> "7" [color=blue, fontcolor=blue];
+	"9" -> "7" [color=blue, fontcolor=blue];
+	"14" -> "7" [color=blue, fontcolor=blue];
+	"17" -> "21" [color=blue, fontcolor=blue];
+}
