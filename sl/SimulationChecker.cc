@@ -4,9 +4,6 @@
 #include <map>
 #include <utility>
 
-class SimulationRelation{
-};
-
 SimulationChecker::SimulationChecker(){
 }
 
@@ -88,57 +85,27 @@ PGRelation iterateRelation(PatternGraph * m1, PatternGraph * m2, PGRelation rel)
 				++m1_succItr;
 			}
 
-			if (allSuccsHaveCorrespondingEdge){
-				result.insert(*rel_edgeItr);
-			}
+			if (allSuccsHaveCorrespondingEdge){ result.insert(*rel_edgeItr); }
 
 			++rel_edgeItr;
 	}
-
-#if 0
-	std::vector<PGEdge> m1_edges = m1->getEdgeList();
-	std::vector<PGEdge>::iterator m1_edgeItr = m1_edges.begin();
-	std::vector<PGEdge>::iterator	m1_edgeEnd = m1_edges.end();
-
-	while(m1_edgeItr != m1_edgeEnd){
-		ModifierNode * m1_src = (*m1_edgeItr)->first;
-		ModifierNode * m1_dst = (*m1_edgeItr)->second;
-		
-		PGRelation::iterator rel_edgeItr = rel.begin();
-		PGRelation::iterator rel_edgeEnd = rel.end();
-		while (rel_edgeItr != rel_edgeEnd){
-			ModifierNode * rel_src
-			++rel_edgeItr;
-
-			//There must be some node s2_dst s.t. m1_dst -> 
-		}
-
-		++m1_edgeItr;
-	}
-	#endif
 }
 
 bool SimulationChecker::simulates(PatternGraph * m1, PatternGraph * m2){
 	PGRelation rel = generateBaseRelation(m1, m2);
 	while(true){
 		PGRelation rel_plus1 = iterateRelation(m1, m2, rel);
-		if (rel.size() == rel_plus1.size()){
-			//Reached a fixpoint
-			break;
-		} else {
-			rel = rel_plus1;
-		}
+		if (rel.size() == rel_plus1.size()){ /* Reached a fixpoint */ break; }
+		else { rel = rel_plus1; }
 	}
 
-	//Test if each root of is in the simuatlion
+	//Test if each root of is in the simulation
 	bool eachRootInSimulation = true;
 	std::vector<ModifierNode *>::iterator m1_nodeItr = m1->nodes.begin();
 	std::vector<ModifierNode *>::iterator m1_nodeEnd = m1->nodes.end();
 	while(m1_nodeItr != m1_nodeEnd){
 		ModifierNode * node = *m1_nodeItr;
 		if (node->inEdges.empty()){
-			//TODO: ensure that there is a corresponding root in rel
-
 			PGRelation::iterator relItr = rel.begin();
 			PGRelation::iterator relEnd = rel.end();
 			bool thisRootInSimulation = false;
@@ -151,11 +118,10 @@ bool SimulationChecker::simulates(PatternGraph * m1, PatternGraph * m2){
 				}
 				++relItr;
 			}
-			eachRootInSimulation =
-				(thisRootInSimulation ? eachRootInSimulation : false);
+			eachRootInSimulation = (thisRootInSimulation ? eachRootInSimulation : false);
 		}
+		++m1_nodeItr;
 	}
-
 	return eachRootInSimulation;
 }
 
@@ -209,7 +175,6 @@ PatternGraph * SimulationChecker::counterExample(PatternGraph * m1, PatternGraph
 	while(!m2_uncheckedEdges.empty()){
 		PGEdge m2_uncheckedEdge = m2_uncheckedEdges.back();
 		m2_uncheckedEdges.pop_back();
-		//std::vector<PGEdge> candidateEdges = candidateMatches(m1_Edges);
 		std::vector<PGEdge> candidateEdges;
 		candidateEdges = candidateMatches(m2_uncheckedEdge, m1_Edges);
 		PGEdge m1_candidateEdge = candidateEdges.back();

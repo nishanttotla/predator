@@ -70,6 +70,7 @@ void HeapOracle::readFile(std::string filename){
 		fprintf(stderr, "dot file is %s\n", dotFile.c_str());
 		PatternGraph * mod = new PatternGraph(dotFile);
 	}
+	std::cerr << "[HeapOracle::readFile <<<]"  << std::endl;
 }
 
 void HeapOracle::step(SymHeap& sh, const CodeStorage::Insn * insn){
@@ -161,7 +162,7 @@ std::vector<PGEdge> PatternGraph::getEdgeList(){
 }
 
 void PatternGraph::parseNode(std::string& line){
-	std::cerr << "node line is: \"" << line << "\"\n";
+	std::cerr << "node line is: \"" << line << "\"" << std::endl;
 	StringVec pieces;
 	boost::algorithm::split( pieces, line, 
 		boost::algorithm::is_any_of("\""), 
@@ -171,6 +172,7 @@ void PatternGraph::parseNode(std::string& line){
 
 	ModifierNode * node = new ModifierNode(nodeName);
 	nodeMap[nodeName] = node;
+	std::cerr << "[PatternGraph::parseNode] node " << nodeName << std::endl;
 }
 
 void PatternGraph::parseEdge(std::string& line){
@@ -184,15 +186,19 @@ void PatternGraph::parseEdge(std::string& line){
 
 	std::string from = lead.substr(0, arrowIdx);
 	boost::algorithm::trim(from);
+	boost::erase_all( from, "\"" );
 	
 	std::string to = lead.substr(arrowIdx + 2);
 	boost::algorithm::trim(to);
+	boost::erase_all( to, "\"" );
 
-	std::cerr << "edge line is: \"" << line << "\" from/to is "
-		<< from << " to " << to << "\n";
+	std::cerr << "edge line is: \"" << line 
+		<< "\" from/to is " << from 
+		<< " to " << to << "\n";
 
 	ModifierNode * fromNode = nodeMap[from];
 	ModifierNode * toNode = nodeMap[to];
+	std::cerr << "fromNode " << fromNode << " toNode " << toNode << std::endl;
 	fromNode->outEdges[toNode->name] = toNode;
 	toNode->inEdges[fromNode->name] = fromNode;
 }
