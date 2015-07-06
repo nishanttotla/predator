@@ -79,6 +79,7 @@ class ModifierNode{
 //Pattern Graph
 class PatternGraph{
 	public: 
+		PatternGraph(){}
 		PatternGraph(std::string& dotFile);
 		NodeVec nodes;
 		std::vector<PGEdge> getEdgeList();

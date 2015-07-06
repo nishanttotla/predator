@@ -63,6 +63,7 @@ add_library(predator STATIC
     shape.cc
     sigcatch.cc
 		pgEvaluator.cc
+		pgHeapAdaptor.cc
     symabstract.cc
     symbin.cc
     symbt.cc
