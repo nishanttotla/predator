@@ -48,15 +48,21 @@ DIRS_BUILD      ?= cl $(ANALYZERS)
 .PHONY: all llvm check clean distcheck distclean api cl/api sl/api ChangeLog \
 	build_boost \
 	build_gcc build_gcc_svn update_gcc update_gcc_src_only \
+	predicates \
 	$(DIRS_BUILD)
 
-all: cl
+all: cl predicates
 	$(MAKE) $(ANALYZERS)
 
 llvm:
 	$(MAKE) -C cl CMAKE="cmake -D ENABLE_LLVM=ON"
 	$(MAKE) -C sl CMAKE="cmake -D ENABLE_LLVM=ON"
 	$(MAKE) -C fa CMAKE="cmake -D ENABLE_LLVM=ON"
+	$(MAKE) -C predicates
+
+predicates:
+	$(MAKE) -C predicates/
+
 
 $(DIRS_BUILD):
 	$(MAKE) -C $@

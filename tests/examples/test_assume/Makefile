@@ -1,9 +1,9 @@
 prog = test
 
 test:
-	-gcc-4.9 -fplugin=$(PREDATOR_ROOT)/predatorGit/sl_build/libsl.so \
+	-gcc-4.9 -fplugin=$(PREDATOR_ROOT)/sl_build/libsl.so \
 	-S \
-	-I$(PREDATOR_ROOT)/predatorGit/include/predator-builtins \
+	-I$(PREDATOR_ROOT)/include/predator-builtins \
 	-DPREDATOR \
 	-fplugin-arg-libsl-dump-pp=linear_code.txt \
 	-fplugin-arg-libsl-dump-types \

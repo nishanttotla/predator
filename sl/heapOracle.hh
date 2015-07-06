@@ -18,9 +18,11 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 class AtomicProposition;
 class ModifierNode;
+class PatternGraph;
 
 typedef std::vector< std::string > StringVec;
 typedef std::set<AtomicProposition> APSet;
@@ -33,6 +35,7 @@ typedef std::set<PGEdge> PGRelation;
 
 typedef std::pair<ModifierNode *, ModifierNode *> NodePair;
 typedef std::vector<NodePair *> PairVec;
+typedef std::vector<ModifierNode *> NodeVec;
 typedef std::map<APSet, PairVec*> Coloring;
 
 class AtomicProposition{
@@ -55,14 +58,29 @@ class ModifierNode{
 				this->name = nameIn;
 			}
 
+			NodeVec succs(){
+				NodeVec result;
+				std::map<std::string, ModifierNode *>::iterator itr =
+					outEdges.begin();
+				while (itr != outEdges.end()){
+					result.push_back(itr->second);
+					++itr;
+				}
+				return result;
+			}
+
+
 			bool samePropositions(std::set<AtomicProposition>& props);
+			bool isRoot(){
+				return inEdges.empty();
+			}
 };
 
 //Pattern Graph
 class PatternGraph{
 	public: 
 		PatternGraph(std::string& dotFile);
-		std::vector<ModifierNode *> nodes;
+		NodeVec nodes;
 		std::vector<PGEdge> getEdgeList();
 
 		bool hasEdge(ModifierNode * src, ModifierNode * dst){
@@ -75,6 +93,18 @@ class PatternGraph{
 				++itr;
 			}
 			return false;
+		}
+
+		std::vector<ModifierNode *> roots(){
+			std::vector<ModifierNode *> results;
+			std::vector<ModifierNode *>::iterator nodeItr;
+			std::vector<ModifierNode *>::iterator nodeEnd;
+			while (nodeItr != nodeEnd){
+				ModifierNode * node = *nodeItr;
+				if (node->isRoot()){ results.push_back(node); }
+				++nodeItr;
+			}
+			return results;
 		}
 	private:	
 		void parseNode(std::string& line);
