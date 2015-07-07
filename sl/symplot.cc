@@ -40,33 +40,7 @@
 
 #include <boost/foreach.hpp>
 
-// /////////////////////////////////////////////////////////////////////////////
-// implementation of HeapCrawler
-class HeapCrawler {
-    public:
-        HeapCrawler(const SymHeap &sh, const bool digForward = true):
-            sh_(const_cast<SymHeap &>(sh)),
-            digForward_(digForward)
-        {
-        }
-
-        bool /* anyChange */ digObj(const TObjId);
-        bool /* anyChange */ digVal(const TValId);
-
-        const TObjSet objs() const { return objs_; }
-        const TValSet vals() const { return vals_; }
-
-    private:
-        void digFields(const TObjId of);
-        void operate();
-
-    private:
-        SymHeap                    &sh_;
-        WorkList<TValId>            wl_;
-        bool                        digForward_;
-        TObjSet                     objs_;
-        TValSet                     vals_;
-};
+#include "heapCrawler.hh"
 
 void HeapCrawler::digFields(const TObjId obj)
 {

@@ -49,8 +49,8 @@ inline TValId boolToVal(const bool b)
 
 struct ProgramPoint{
 	public:
-		ProgramPoint(const char * file, int line, int column, int visit);
-		struct cl_loc * loc;
+		ProgramPoint(const struct cl_loc * loc, int visit);
+		const struct cl_loc * loc;
 		int visit;
 };
 

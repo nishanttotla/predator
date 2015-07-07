@@ -47,7 +47,7 @@ HeapOracle::HeapOracle(std::string filename){
 }
 
 void HeapOracle::readFile(std::string filename){
-	fprintf(stderr, "[HeapOracle::readFile >>>] opening file %s\n", filename.c_str());
+	std::cerr << "[HeapOracle::readFile >>>] opening file " << filename << std::endl;
 	std::ifstream infile(filename);
 	if (!infile.is_open()){
 		fprintf(stderr, "Could not open heap file %s\n", filename.c_str());
@@ -56,8 +56,9 @@ void HeapOracle::readFile(std::string filename){
 
 	//start iterating through file, looking for a (program_point,Heap start)
 	std::string line;
+	int numHeapPatterns = 0;
 	while (getline(infile, line)){
-		std::cerr << "process line " << line << "\n";
+		std::cerr << "process line " << line << std::endl;
 		std::stringstream lineAsStream(line);
 		std::string ptString; 
 		std::string dotFile;
@@ -68,9 +69,12 @@ void HeapOracle::readFile(std::string filename){
 		fprintf(stderr, "pt line is %s %d %d %d\n", 
 			pt->loc->file, pt->loc->line, pt->loc->column, pt->visit);
 		fprintf(stderr, "dot file is %s\n", dotFile.c_str());
+	  std::cerr << std::endl;
 		PatternGraph * mod = new PatternGraph(dotFile);
+		modAtProgramPoint.put(pt, mod);
+		numHeapPatterns++;
 	}
-	std::cerr << "[HeapOracle::readFile <<<]"  << std::endl;
+	std::cerr << "[HeapOracle::readFile <<<] #heaps: " << numHeapPatterns  << std::endl;
 }
 
 void HeapOracle::step(SymHeap& sh, const CodeStorage::Insn * insn){
@@ -78,11 +82,20 @@ void HeapOracle::step(SymHeap& sh, const CodeStorage::Insn * insn){
 	std::ostringstream stream;
 
 	stream << "[step] insn is " << *insn << " " << insn->loc << "\n";
+	const struct cl_loc * loc = &insn->loc;
+	PatternGraph * pg = modAt(loc);
+	if (pg == NULL){
+		stream << "[step] pg is null\n" << std::endl;
+	} else {
+		stream << "[step] pg is not null\n" << std::endl;
+	}
 
-	fprintf(stderr, "HeapOracle::step %s\n", stream.str().c_str());
+	fprintf(stderr, "%s\n", stream.str().c_str());
 }
 
 PatternGraph * HeapOracle::modAt(const struct cl_loc * loc){
+	int visit = 0; //FIXME
+	ProgramPoint pt(loc, visit);
 	return NULL;
 }
 

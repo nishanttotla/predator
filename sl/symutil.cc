@@ -33,13 +33,10 @@
 
 #include <boost/foreach.hpp>
 
-ProgramPoint::ProgramPoint(const char * file, int line, int column, int visit){
-	struct cl_loc * location = new struct cl_loc();
-	location->file = file;
-	location->line = line;
-	location->column = column;
-	this->loc = location;
-	this->visit = visit;
+ProgramPoint::ProgramPoint(const struct cl_loc * locIn, int visitIn) :
+	loc(locIn),
+	visit(visitIn)
+{
 }
 
 struct ProgramPoint * ptFromLine(std::string line){
@@ -58,7 +55,12 @@ struct ProgramPoint * ptFromLine(std::string line){
 	int col = atoi(srcChar.c_str());
 	int visitVal = atoi(visitStr.c_str());
 		
-	struct ProgramPoint * pt = new struct ProgramPoint(srcFile.c_str(), lineVal, col, visitVal);
+	struct cl_loc * location = new struct cl_loc();
+	location->file = srcFile.c_str();
+	location->line = lineVal;
+	location->column = col;
+
+	struct ProgramPoint * pt = new struct ProgramPoint(location, visitVal);
 	return pt;
 }
 

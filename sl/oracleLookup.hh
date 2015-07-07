@@ -20,7 +20,7 @@ class HeapInjection{
 class IterationMapper{
 	public:
 		PatternGraph * lookup(struct ProgramPoint * pt);
-		bool put(struct ProgramPoint * pt, int itr);
+		bool put(struct ProgramPoint * pt, PatternGraph * mod);
 	private:
 		std::map<int, HeapInjection *> innerMap;
 };
@@ -28,7 +28,7 @@ class IterationMapper{
 class CharMapper{
 	public:
 		PatternGraph * lookup(struct ProgramPoint * pt);
-		bool put(struct ProgramPt * pt, PatternGraph * mod);
+		bool put(struct ProgramPoint * pt, PatternGraph * mod);
 	private:
 		std::map<int, IterationMapper*> innerMap;
 };
@@ -36,7 +36,7 @@ class CharMapper{
 class PointMapper{
 	public:
 		PatternGraph * lookup(struct ProgramPoint * pt);
-		void put(struct ProgramPoint * pt, PatternGraph * mod);
+		bool put(struct ProgramPoint * pt, PatternGraph * mod);
 	private:
 		std::map<int, CharMapper*> innerMap;
 };
