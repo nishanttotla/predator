@@ -21,41 +21,43 @@
  *  CPAchecker web page:
  *    http://cpachecker.sosy-lab.org
  */
-package proveit.heapgraph;
+package org.sosy_lab.cpachecker.core.algorithm.impact;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * Basically just a wrapper around a set of edges
- */
-public class Relation implements Iterable<Edge>{
-  Set<Edge> edges;
+import org.sosy_lab.cpachecker.cfa.ast.c.CSimpleDeclaration;
 
-  Relation(){
-    edges = new TreeSet<>();
+import proveit.heapgraph.Graph;
+import proveit.heapgraph.HeapVar;
+import proveit.heapgraph.Node;
+
+
+class ProveItState {
+  Graph g;
+  Set<CSimpleDeclaration> vars;
+
+  public ProveItState(){
+    g = new Graph();
+    vars = new TreeSet<CSimpleDeclaration>();
   }
 
-  void add(Node from, Node to){
-    edges.add(new Edge(from, to, Edge.ThreeVal.DEFINITE));
+  public ProveItState(ProveItState other){
+    g = new Graph(other.g);
+    vars.addAll(other.vars);
   }
 
-  public int size() {
-    return edges.size();
+  public ProveItState alloc(CSimpleDeclaration dst){
+    ProveItState succ = new ProveItState(this);
+    HeapVar vIn = succ.g.findOrMakeVar(dst);
+    Node nIn = new Node();
+    succ.g.allocNode(vIn, nIn);
+    return succ;
   }
 
-  @Override
-  public Iterator<Edge> iterator() {
-    return edges.iterator();
-  }
+  public ProveItState load(CSimpleDeclaration dst, CSimpleDeclaration src, String field){
+    ProveItState succ = new ProveItState(this);
 
-  public boolean hasEdge(Node src, Node dst) {
-    for (Edge edge : edges) {
-      if (edge.src == src && edge.dst == dst){
-        return true;
-      }
-    }
-    return false;
+    return succ;
   }
 }

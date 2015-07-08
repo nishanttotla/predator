@@ -26,7 +26,6 @@ package org.sosy_lab.cpachecker.core.algorithm.impact;
 import static org.sosy_lab.cpachecker.util.AbstractStates.extractLocation;
 import static org.sosy_lab.cpachecker.util.CFAUtils.leavingEdges;
 
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,7 +79,7 @@ import com.google.common.collect.Lists;
  * paper "Lazy Abstraction with Interpolants" and implemented in the tool IMPACT.
  */
 @Options(prefix="impact")
-public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
+public class OrigImpactAlgorithm implements Algorithm, StatisticsProvider {
 
   private final LogManager logger;
 
@@ -91,7 +90,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   private final PathFormulaManager pfmgr;
   private final Solver solver;
   private final InterpolationManager imgr;
-  private final HeapTransfer heapTransfer;
 
   private final Timer expandTime = new Timer();
   private final Timer forceCoverTime = new Timer();
@@ -99,30 +97,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   private final Timer coverTime = new Timer();
   private final Timer closeTime = new Timer();
   private int successfulForcedCovering = 0;
-
-  private void unwindTreeToDot(String name, ReachedSet reached) throws Exception{
-    PrintStream dot = new PrintStream(new FileOutputStream(name, false));
-    dot.println("digraph \"" + name + "\" {");
-    dot.printf("\tlabel=<<FONT POINT-SIZE=\"18\">%s</FONT>>;\n", name);
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      dot.printf("\t\"%d\" [shape=box, label=\"%s\"];\n",
-          v.getId(),
-          v.getId() + "\\n" + v.getStateFormula());
-    }
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      if (v.hasParent()){
-        Vertex parent = v.getParent();
-        dot.printf("\t\"%d\" -> \"%d\" [];\n", parent.getId(), v.getId());
-      }
-    }
-
-    dot.printf("}\n");
-    dot.flush();
-    dot.close();
-    return;
-  }
 
   private class Stats implements Statistics {
 
@@ -154,11 +128,10 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   }
 
   @Option(secure=true, description="enable the Forced Covering optimization")
-  //private boolean useForcedCovering = true;
-  private boolean useForcedCovering = false;
+  private boolean useForcedCovering = true;
 
 
-  public ImpactAlgorithm(Configuration config, LogManager pLogger,
+  public OrigImpactAlgorithm(Configuration config, LogManager pLogger,
       ShutdownNotifier pShutdownNotifier,
       ConfigurableProgramAnalysis pCpa, CFA cfa) throws InvalidConfigurationException {
     config.inject(this);
@@ -167,7 +140,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
     System.out.println("[ImpactAlgorithm.ImpactAlgorithm] >>>");
 
-    heapTransfer = new HeapTransfer();
     solver = Solver.create(config, pLogger, pShutdownNotifier);
     fmgr = solver.getFormulaManager();
     bfmgr = fmgr.getBooleanFormulaManager();
@@ -204,7 +176,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   }
 
   private void expand(Vertex v, ReachedSet reached) throws CPAException, InterruptedException {
-    System.out.println("[expand] >>>");
     expandTime.start();
     try {
       assert v.isLeaf() && !v.isCovered();
@@ -214,8 +185,8 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
       CFANode loc = extractLocation(v);
       for (CFAEdge edge : leavingEdges(loc)) {
-        Collection<? extends AbstractState> successors = cpa.getTransferRelation().getAbstractSuccessorsForEdge(predecessor, precision, edge);
 
+        Collection<? extends AbstractState> successors = cpa.getTransferRelation().getAbstractSuccessorsForEdge(predecessor, precision, edge);
         if (successors.isEmpty()) {
           // edge not feasible
           // create fake vertex
@@ -224,13 +195,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
         }
         assert successors.size() == 1;
 
-        AbstractState successor = Iterables.getOnlyElement(successors);
-        System.out.println("edge is " + edge);
-        //System.out.println("successor is " + successor.getId());
-        System.out.println("loc is " + loc);
-
-        Vertex w = new Vertex(bfmgr, v, bfmgr.makeBoolean(true), successor);
-        heapTransfer.post(edge, v, w);
+        Vertex w = new Vertex(bfmgr, v, bfmgr.makeBoolean(true), Iterables.getOnlyElement(successors));
         reached.add(w, precision);
         reached.popFromWaitlist(); // we don't use the waitlist
       }
@@ -498,19 +463,11 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   }
 
   private void unwind(ReachedSet reached) throws CPAException, InterruptedException {
-    int itr = 0;
 
     outer:
     while (true) {
-      try{
-        String name = "unwind_" + itr + ".dot";
-        unwindTreeToDot(name, reached);
-      } catch (Exception e){
-        System.out.println("could not write unwind tree");
-        e.printStackTrace(System.err);
-      }
-      System.out.println("[unwind] iteration " + itr++);
-
+      System.out.println("[unwind] iteration");
+      System.out.println("reached is ");
       for (AbstractState ae : reached) {
         Vertex v = (Vertex)ae;
         if (v.isLeaf() && !v.isCovered()) {
@@ -518,15 +475,16 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
           // close parents of v
           List<Vertex> path = getPathFromRootTo(v);
           System.out.println("---PATH--- (sz " + path.size() + ")");
+          for (Vertex vI : path){
+            System.out.println(vI + ",");
+          }
           path = path.subList(0, path.size()-1); // skip v itself
           for (Vertex w : path) {
             if (close(w, reached)) {
-              System.out.println("[unwind] parent " + w + " of " + v + " has been closed");
               continue outer; // v is now covered
             }
           }
 
-          System.out.println("doing DFS from " + v.getId());
           if (!dfs(v, reached)) {
             logger.log(Level.INFO, "Bug found");
             break outer;

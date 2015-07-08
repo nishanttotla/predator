@@ -23,39 +23,9 @@
  */
 package proveit.heapgraph;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
-/**
- * Basically just a wrapper around a set of edges
- */
-public class Relation implements Iterable<Edge>{
-  Set<Edge> edges;
-
-  Relation(){
-    edges = new TreeSet<>();
-  }
-
-  void add(Node from, Node to){
-    edges.add(new Edge(from, to, Edge.ThreeVal.DEFINITE));
-  }
-
-  public int size() {
-    return edges.size();
-  }
-
-  @Override
-  public Iterator<Edge> iterator() {
-    return edges.iterator();
-  }
-
-  public boolean hasEdge(Node src, Node dst) {
-    for (Edge edge : edges) {
-      if (edge.src == src && edge.dst == dst){
-        return true;
-      }
-    }
-    return false;
-  }
+public class LabeledEdge {
+  public Node src;
+  public Node dst;
+  public String field;
 }

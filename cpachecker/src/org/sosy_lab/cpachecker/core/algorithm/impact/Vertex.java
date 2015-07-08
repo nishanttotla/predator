@@ -205,4 +205,8 @@ class Vertex extends AbstractSingleWrapperState {
   public String toString() {
     return "Id: " + id + " " + stateFormula.toString() + "\n" + super.toString();
   }
+
+  public int getId(){
+    return id;
+  }
 }

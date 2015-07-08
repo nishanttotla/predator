@@ -25,14 +25,14 @@ package proveit.heapgraph;
 
 
 public class Edge {
-  enum Type { DEFINITE, DEFINITE_NOT, MAYBE}
+  enum ThreeVal { DEFINITE, DEFINITE_NOT, MAYBE}
 
-  public Type type;
+  public ThreeVal val;
   public Node src;
   public Node dst;
 
-  public Edge(Node src, Node dst, Type type){
-    this.type = type;
+  public Edge(Node src, Node dst, ThreeVal val){
+    this.val = val;
     this.src = src;
     this.dst = dst;
   }
