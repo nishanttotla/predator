@@ -43,6 +43,15 @@ public class Graph {
     this.heapVarLabeling = new HeapVarLabeling();
   }
 
+  public static Graph universalHeap(){
+    return new Graph();
+  }
+
+  public static Graph emptyHeap(){
+    return new Graph();
+  }
+
+
   public Graph(Graph other){
     this();
 

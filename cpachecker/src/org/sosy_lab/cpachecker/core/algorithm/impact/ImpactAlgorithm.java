@@ -26,7 +26,6 @@ package org.sosy_lab.cpachecker.core.algorithm.impact;
 import static org.sosy_lab.cpachecker.util.AbstractStates.extractLocation;
 import static org.sosy_lab.cpachecker.util.CFAUtils.leavingEdges;
 
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +71,8 @@ import org.sosy_lab.cpachecker.util.predicates.pathformula.PathFormula;
 import org.sosy_lab.cpachecker.util.predicates.pathformula.PathFormulaManagerImpl;
 import org.sosy_lab.cpachecker.util.predicates.pathformula.SSAMap;
 
+import proveit.heapgraph.Graph;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -99,30 +100,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   private final Timer coverTime = new Timer();
   private final Timer closeTime = new Timer();
   private int successfulForcedCovering = 0;
-
-  private void unwindTreeToDot(String name, ReachedSet reached) throws Exception{
-    PrintStream dot = new PrintStream(new FileOutputStream(name, false));
-    dot.println("digraph \"" + name + "\" {");
-    dot.printf("\tlabel=<<FONT POINT-SIZE=\"18\">%s</FONT>>;\n", name);
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      dot.printf("\t\"%d\" [shape=box, label=\"%s\"];\n",
-          v.getId(),
-          v.getId() + "\\n" + v.getStateFormula());
-    }
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      if (v.hasParent()){
-        Vertex parent = v.getParent();
-        dot.printf("\t\"%d\" -> \"%d\" [];\n", parent.getId(), v.getId());
-      }
-    }
-
-    dot.printf("}\n");
-    dot.flush();
-    dot.close();
-    return;
-  }
 
   private class Stats implements Statistics {
 
@@ -176,7 +153,9 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   }
 
   public AbstractState getInitialState(CFANode location) {
-    return new Vertex(bfmgr, bfmgr.makeBoolean(true), cpa.getInitialState(location, StateSpacePartition.getDefaultPartition()));
+    Vertex init = new Vertex(bfmgr, bfmgr.makeBoolean(true), cpa.getInitialState(location, StateSpacePartition.getDefaultPartition()));
+    init.setHeap(Graph.universalHeap());
+    return init;
   }
 
   public Precision getInitialPrecision(CFANode location) {
@@ -225,12 +204,10 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
         assert successors.size() == 1;
 
         AbstractState successor = Iterables.getOnlyElement(successors);
-        System.out.println("edge is " + edge);
         //System.out.println("successor is " + successor.getId());
         System.out.println("loc is " + loc);
 
         Vertex w = new Vertex(bfmgr, v, bfmgr.makeBoolean(true), successor);
-        heapTransfer.post(edge, v, w);
         reached.add(w, precision);
         reached.popFromWaitlist(); // we don't use the waitlist
       }
@@ -239,7 +216,13 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
     }
   }
 
+  private boolean refineTree(List<Vertex> path){
+
+  }
+
   private List<Vertex> refine(final Vertex v) throws CPAException, InterruptedException {
+    System.out.println("[refine] " + v.getId());
+
     refinementTime.start();
     try {
       assert (v.isTarget() && ! bfmgr.isFalse(v.getStateFormula()));
@@ -256,7 +239,10 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
       CounterexampleTraceInfo cex = imgr.buildCounterexampleTrace(pathFormulas);
 
+
       if (!cex.isSpurious()) {
+        System.out.println("[refine] realCounterexample");
+        refineTree();
         return Collections.emptyList(); // real counterexample
       }
 
@@ -504,7 +490,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
     while (true) {
       try{
         String name = "unwind_" + itr + ".dot";
-        unwindTreeToDot(name, reached);
+        DotPrinter.unwindTreeToDot(name, reached);
       } catch (Exception e){
         System.out.println("could not write unwind tree");
         e.printStackTrace(System.err);

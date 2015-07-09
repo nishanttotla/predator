@@ -41,6 +41,7 @@ import org.sosy_lab.cpachecker.util.AbstractStates;
 import org.sosy_lab.cpachecker.util.predicates.interfaces.BooleanFormula;
 import org.sosy_lab.cpachecker.util.predicates.interfaces.BooleanFormulaManager;
 
+import proveit.heapgraph.Graph;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -60,6 +61,7 @@ class Vertex extends AbstractSingleWrapperState {
   private static int nextId = 0;
   private final int id = nextId++;
 
+  private Graph heapGraph;
   private final Vertex parent;
   private final BooleanFormulaManager bfmgr;
 
@@ -84,6 +86,14 @@ class Vertex extends AbstractSingleWrapperState {
     parent = checkNotNull(pParent);
     parent.children.add(this);
     stateFormula = checkNotNull(pStateFormula);
+  }
+
+  public Graph getHeap(){
+    return heapGraph;
+  }
+
+  public void setHeap(Graph graph){
+    this.heapGraph = graph;
   }
 
 

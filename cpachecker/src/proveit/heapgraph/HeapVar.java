@@ -23,9 +23,13 @@
  */
 package proveit.heapgraph;
 
-import org.sosy_lab.cpachecker.util.predicates.interfaces.BooleanFormula;
+import org.sosy_lab.cpachecker.cfa.ast.c.CSimpleDeclaration;
 
-public class Node {
-  public BooleanFormula predicate;
-  boolean root;
+
+public class HeapVar {
+  CSimpleDeclaration decl;
+
+  public HeapVar(CSimpleDeclaration pDst) {
+    this.decl = pDst;
+  }
 }
