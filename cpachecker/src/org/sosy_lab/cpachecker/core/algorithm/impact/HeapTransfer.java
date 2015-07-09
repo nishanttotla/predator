@@ -44,11 +44,11 @@ import proveit.heapgraph.HeapVar;
 public class HeapTransfer {
   static int iter = 0;
 
-  public void post(CFAEdge edge, Vertex preV, Vertex postV) {
+  public Graph post(CFAEdge edge, Vertex v, Graph pre) {
     System.out.println("[post] >>>");
-    String graphName = "heap_" + preV.getId() + ".dot";
+    String graphName = "heap_" + v.getId() + ".dot";
     try {
-      DotPrinter.heapGraph(graphName, preV.getHeap());
+      DotPrinter.heapGraph(graphName, pre);
     } catch (Exception e){
       e.printStackTrace(System.err);
     }
@@ -56,25 +56,22 @@ public class HeapTransfer {
     if (edge instanceof CStatementEdge){
       CStatement stmt = ((CStatementEdge)edge).getStatement();
       System.out.println("edge stmt " + stmt);
-      applyStmt(stmt, preV, postV);
+      return applyStmt(stmt, pre);
     } else if (edge instanceof BlankEdge){
-      postV.setHeap(preV.getHeap());
-      if (preV.getHeap() == null){
-        System.out.println("copy null heap...");
-        assert(false);
-      }
+      return pre;
     } else if (edge instanceof CDeclarationEdge){
       CDeclaration decl = ((CDeclarationEdge)edge).getDeclaration();
-      postV.setHeap(preV.getHeap());
-      applyDecl(decl, postV);
+      return applyDecl(decl, pre);
     } else if (edge instanceof CAssumeEdge){
       //TODO: don't think assumes should change the heap
-      postV.setHeap(preV.getHeap());
+      return new Graph(pre);
     } else {
       System.out.println("unknown edge type " + edge.getClass());
       assert(false);
+      return null;
     }
 
+    /*
     if (postV.getHeap() == null){
       System.out.println("NULL HEAP");
       assert(false);
@@ -85,11 +82,10 @@ public class HeapTransfer {
     } catch (Exception e){
       e.printStackTrace(System.err);
     }
-
-    iter++;
+    */
   }
 
-  public void applyStmt(CStatement stmt, Vertex preV, Vertex pW){
+  public Graph applyStmt(CStatement stmt, Graph pre){
 
     //Expression assignment. Could be predicate var or heap var
     if (stmt instanceof CExpressionAssignmentStatement) {
@@ -100,40 +96,39 @@ public class HeapTransfer {
 
       if (lhs instanceof CIdExpression){
         CSimpleDeclaration decl = extractDeclUsed(lhs);
-
-        Graph heap = new Graph(preV.getHeap());
-        pW.setHeap(heap);
-        applyDecl(decl, pW);
+        return applyDecl(decl, pre);
       } else if (lhs instanceof CFieldReference){
         CFieldReference lhsRef = (CFieldReference)lhs;
         String field = lhsRef.getFieldName();
         CSimpleDeclaration decl = extractDeclUsed(lhsRef.getFieldOwner());
         CExpression rhs = assg.getRightHandSide();
 
-        Graph heap = new Graph(preV.getHeap());
-        pW.setHeap(heap);
+        Graph heap = new Graph(pre);
         HeapVar vDst = heap.findOrMakeVar(decl);
         //HeapVar vSrc =heap.findOrMakeVar(pDst);
         //heap.store(vDst, vSrc, field);
-
+        return heap;
       } else {
         System.out.println("unknown LHS " + lhs);
         assert(false);
+        return null;
       }
     } else if (stmt instanceof CFunctionCallAssignmentStatement){
       CFunctionCallAssignmentStatement assg =
           (CFunctionCallAssignmentStatement)stmt;
-      Graph heap = new Graph(preV.getHeap());
-      pW.setHeap(heap);
+      Graph heap = new Graph(pre);
+      return heap;
     } else {
       System.out.println("unknown Stmt type " + stmt.getClass());
       assert(false);
+      return null;
     }
   }
 
-  public void applyDecl(CSimpleDeclaration decl, Vertex vert){
+  public Graph applyDecl(CSimpleDeclaration decl, Graph pre){
     //TODO: if the variable being declared is a HeapVar, we should
     // create it. Otherwise, we should track it as a predicate variable
+    return new Graph(pre);
   }
 
   public static CSimpleDeclaration extractDeclUsed(CExpression expr){

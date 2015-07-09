@@ -93,6 +93,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   private final Solver solver;
   private final InterpolationManager imgr;
   private final HeapTransfer heapTransfer;
+  private final ProveIt proveIt;
 
   private final Timer expandTime = new Timer();
   private final Timer forceCoverTime = new Timer();
@@ -144,6 +145,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
     System.out.println("[ImpactAlgorithm.ImpactAlgorithm] >>>");
 
+    proveIt = new ProveIt();
     heapTransfer = new HeapTransfer();
     solver = Solver.create(config, pLogger, pShutdownNotifier);
     fmgr = solver.getFormulaManager();
@@ -216,8 +218,18 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
     }
   }
 
+  /**
+   * Returns true if the path is real
+   * @param path
+   * @return
+   */
   private boolean refineTree(List<Vertex> path){
+    System.out.println("---refineTree---");
+    for (Vertex v : path){
+      System.out.println("refine vertex " + v.getId());
+    }
 
+    return true;
   }
 
   private List<Vertex> refine(final Vertex v) throws CPAException, InterruptedException {
@@ -239,11 +251,12 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
       CounterexampleTraceInfo cex = imgr.buildCounterexampleTrace(pathFormulas);
 
-
       if (!cex.isSpurious()) {
         System.out.println("[refine] realCounterexample");
-        refineTree();
-        return Collections.emptyList(); // real counterexample
+        cex = proveIt.buildCounterexampleTrace(path, pathFormulas);
+        if(refineTree(path) == true){
+          return Collections.emptyList(); // real counterexample
+        }
       }
 
       logger.log(Level.FINER, "Refinement successful");
