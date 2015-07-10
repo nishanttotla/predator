@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
-import org.sosy_lab.cpachecker.cfa.model.CFAEdgeType;
 import org.sosy_lab.cpachecker.cfa.model.CFANode;
 import org.sosy_lab.cpachecker.util.AbstractStates;
 import org.sosy_lab.cpachecker.util.predicates.Solver;
@@ -48,14 +47,12 @@ import proveit.heapgraph.SeparatorChecker;
 
 public class ProveItInterp {
   private HeapOracle oracle;
-  private HeapTransfer heapTransfer;
   private BooleanFormulaManagerView bfmgr;
   private InterpolationManager itpmgr;
   private Solver solver;
 
   public ProveItInterp(BooleanFormulaManagerView bfmgr, InterpolationManager itpmgr, Solver solver){
     oracle = new HeapOracle();
-    heapTransfer = new HeapTransfer();
 
     this.bfmgr = bfmgr;
     this.itpmgr = itpmgr;
@@ -191,10 +188,6 @@ public class ProveItInterp {
     }
   }
 
-  private class Footprint{
-
-  }
-
   private class PointInfo{
     //F: footprint
     //S: set of state descriptions
@@ -299,6 +292,7 @@ public class ProveItInterp {
     }
 
     //TODO: this is an over-approximation
+    Graph g = new Graph();
     for (Set<BooleanFormula> may_equal1 : may_eq_classes){
       Node n = new Node();
       n.predicate = conjunction(may_equal1);
@@ -407,18 +401,19 @@ public class ProveItInterp {
         currInfo = new PointInfo();
 
         CFAEdge edge = edge(prev, v);
+        EdgeEffect transform = EdgeEffect.create(edge);
         //Update Footprint
 
         System.out.println("prev info size is " + prevInfo.S.size());
         for (StateDescription s : prevInfo.S){
           try {
-            currInfo.F = this.tranformFootprint(prev, prevInfo.F, edge);
+            currInfo.F = transform.apply(prev, prevInfo.F);
             BooleanFormula pre = prevInfo.restrict(s);
             BooleanFormula upd = semanticConstraint(edge);
             BooleanFormula post = suffixConstraint(path, v);
             BooleanFormula itp = getItp(pre, upd, post);
 
-            Graph reach = heapTransfer.post(edge, v, s.pat);
+            Graph reach = transform.apply(v, s.pat);
             ImpureFormula itpImpure = new ImpureFormula(itp);
 
             Set<StateDescription> pcases = purify(new HashSet<BooleanFormula>(), itpImpure, reach);
@@ -426,49 +421,12 @@ public class ProveItInterp {
             e.printStackTrace();
           }
         }
-
       }
       pts.addLast(currInfo);
       prevInfo = currInfo;
       prev = v;
     }
     System.out.println("[ProveItInterp.buildCounterexampleTrace] <<<");
-    return null;
-  }
-
-  enum OpType {LOAD, STORE, COPY, DATA};
-  private class EdgeFootprintEffect{
-    OpType opType;
-  }
-
-  private EdgeFootprintEffect getEdgeFootprintEffect(CFAEdge edge){
-    CFAEdgeType type = edge.getEdgeType();
-    System.out.println("Edge type is " + edge.getEdgeType());
-    if (type == CFAEdgeType.DeclarationEdge){
-      System.out.println("handle declaration edge");
-    } else {
-      System.out.println("unknown edge type " + type);
-      assert(false);
-    }
-
-    return null;
-  }
-
-  private Footprint tranformFootprint(Vertex prev, Footprint f, CFAEdge edge) {
-    EdgeFootprintEffect effect = getEdgeFootprintEffect(edge);
-    if (effect == null){
-      return f;
-    } else if (effect.opType == OpType.LOAD) {
-      assert(false);
-      return null;
-    } else if (effect.opType == OpType.STORE) {
-      assert(false);
-    } else if (effect.opType == OpType.COPY) {
-      assert(false);
-    } else if (effect.opType == OpType.DATA) {
-      return f;
-    }
-    assert(false);
     return null;
   }
 
