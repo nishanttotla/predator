@@ -304,6 +304,7 @@ public final class InterpolationManager {
       }
 
       f = Collections.unmodifiableList(f);
+      System.out.println("Counterexample trace formulas " + f);
       logger.log(Level.ALL, "Counterexample trace formulas:", f);
 
       // now f is the DAG formula which is satisfiable iff there is a
@@ -325,6 +326,10 @@ public final class InterpolationManager {
       } else {
         currentInterpolator = new Interpolator<>();
       }
+      System.out.printf("about to call currentInterpolator with \n\tF %s\n\tpAbstractionStates%s\n\telementsOnPath  %s\n",
+          f,
+          pAbstractionStates,
+          elementsOnPath);
 
       try {
         try {
@@ -738,14 +743,37 @@ public final class InterpolationManager {
         // initialize all interpolation group ids with "null"
         formulasWithStatesAndGroupdIds = new ArrayList<>(Collections.<Triple<BooleanFormula, AbstractState, T>>nCopies(f.size(), null));
 
+        System.out.println("----check infeasibility of trace----");
+        int i = 0 ;
+        for (Triple<BooleanFormula, AbstractState, Integer> oF : orderedFormulas){
+          System.out.printf("#%d: %s %s ITP Group: %s\n", i, oF.getFirst(), oF.getSecond(), oF.getThird()) ;
+          i++;
+        }
+
+        i = 0;
+
         // ask solver for satisfiability
         spurious = checkInfeasabilityOfTrace(orderedFormulas, formulasWithStatesAndGroupdIds);
         assert formulasWithStatesAndGroupdIds.size() == f.size();
         assert !formulasWithStatesAndGroupdIds.contains(null); // has to be filled completely
 
+        System.out.println("-----after checkInfeasabilityOfTrace-----");
+        i = 0;
+        for (Triple<BooleanFormula, AbstractState, T> form : formulasWithStatesAndGroupdIds){
+          if (form == null){
+            System.out.println("form #" + i + " is null");
+          }
+          else {
+            System.out.printf("#%d: form %s state %s gID %s\n", i, form.getFirst(), form.getSecond(), form.getThird()) ;
+          }
+          i++;
+        }
+
       } finally {
         satCheckTimer.stop();
       }
+
+      System.out.println("Counterexample trace is" + (spurious ? "infeasible" : "feasible"));
 
       logger.log(Level.FINEST, "Counterexample trace is", (spurious ? "infeasible" : "feasible"));
 

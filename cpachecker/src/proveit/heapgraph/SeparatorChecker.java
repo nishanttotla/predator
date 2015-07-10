@@ -109,6 +109,10 @@ public class SeparatorChecker {
     return chain;
   }
 
+  public static Graph findReach(Graph g, Graph separator){
+    return null;
+  }
+
   boolean separates(Graph hMinus, Graph hPlus, Graph u){
     LinkedList<Relation> hPlusNotCovered = entailedBy(hPlus, u);
     if (hPlusNotCovered == null){

@@ -43,6 +43,11 @@ public class Graph {
     this.heapVarLabeling = new HeapVarLabeling();
   }
 
+  public static Graph fromDot(String filename){
+    //TODO
+    return null;
+  }
+
   public static Graph universalHeap(){
     return new Graph();
   }
