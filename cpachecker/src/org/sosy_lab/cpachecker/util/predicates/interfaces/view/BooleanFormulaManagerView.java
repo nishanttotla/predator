@@ -129,7 +129,6 @@ public class BooleanFormulaManagerView extends BaseManagerView implements Boolea
 
   @Override
   public boolean isTrue(BooleanFormula pFormula) {
-    System.out.println("manager type" + manager.getClass());
     return manager.isTrue(pFormula);
   }
 

@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -94,7 +93,8 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   private final Solver solver;
   private final InterpolationManager imgr;
   private final HeapTransfer heapTransfer;
-  private final ProveIt proveIt;
+  //private final ProveIt proveIt;
+  private final ProveItInterp proveIt;
 
   private final Timer expandTime = new Timer();
   private final Timer forceCoverTime = new Timer();
@@ -153,7 +153,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
     bfmgr = fmgr.getBooleanFormulaManager();
     pfmgr = new CachingPathFormulaManager(new PathFormulaManagerImpl(fmgr, config, logger, pShutdownNotifier, cfa, AnalysisDirection.FORWARD));
     imgr = new InterpolationManager(pfmgr, solver, cfa.getLoopStructure(), cfa.getVarClassification(), config, pShutdownNotifier, logger);
-    proveIt = new ProveIt(bfmgr, imgr);
+    proveIt = new ProveItInterp(bfmgr, imgr, solver);
   }
 
   public AbstractState getInitialState(CFANode location) {
@@ -243,20 +243,20 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
 
       logger.log(Level.FINER, "Refinement on " + v);
 
-      {
-        try{
-          LinkedList<BooleanFormula> pForms = new LinkedList<>();
-          pForms.addLast(this.bfmgr.makeBoolean(true));
-          pForms.addLast(this.bfmgr.makeBoolean(true));
-          pForms.addLast(this.bfmgr.makeBoolean(true));
-          pForms.addLast(this.bfmgr.makeBoolean(false));
-          CounterexampleTraceInfo myCEX = imgr.buildCounterexampleTrace(pForms);
-          System.out.println("my counterexample: " + myCEX);
-          System.out.println("-------");
-        } catch (Exception e){
-          System.out.println("Exception with myCEX " + e);
-        }
-      }
+//      {
+//        try{
+//          LinkedList<BooleanFormula> pForms = new LinkedList<>();
+//          pForms.addLast(this.bfmgr.makeBoolean(true));
+//          pForms.addLast(this.bfmgr.makeBoolean(true));
+//          pForms.addLast(this.bfmgr.makeBoolean(true));
+//          pForms.addLast(this.bfmgr.makeBoolean(false));
+//          CounterexampleTraceInfo myCEX = imgr.buildCounterexampleTrace(pForms);
+//          System.out.println("my counterexample: " + myCEX);
+//          System.out.println("-------");
+//        } catch (Exception e){
+//          System.out.println("Exception with myCEX " + e);
+//        }
+//      }
 
       // build list of path elements in bottom-to-top order and reverse
       List<Vertex> path = getPathFromRootTo(v);

@@ -40,6 +40,7 @@ import org.sosy_lab.cpachecker.util.predicates.interpolation.CounterexampleTrace
 import org.sosy_lab.cpachecker.util.predicates.interpolation.InterpolationManager;
 
 import proveit.heapgraph.Graph;
+import proveit.heapgraph.SeparatorChecker;
 
 
 public class ProveIt {
@@ -55,19 +56,17 @@ public class ProveIt {
     this.itpmgr = itpmgr;
   }
 
-  private class Op{
-
-  }
-
   private class EnhancedPredicate implements BooleanFormula{
 
   }
 
+  enum ExOP {AND, OR}
   private class ImpureFormula implements BooleanFormula{
+
     BooleanFormula pureLeaf;
     EnhancedPredicate impureLeaf;
     LinkedList<ImpureFormula> children;
-    Object op;
+    ExOP op;
 
     ImpureFormula(BooleanFormula formula){
        this.pureLeaf = formula;
@@ -95,19 +94,64 @@ public class ProveIt {
       }
       return null;
     }
+
+    public ImpureFormula subDerefPredicate(EnhancedPredicate pre, BooleanFormula post) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public BooleanFormula getPureBF(){
+      assert(this.impureLeaf == null);
+      if (this.pureLeaf != null){
+        return this.pureLeaf;
+      }
+      BooleanFormula result = null;
+      switch (this.op){
+      case AND:
+        for (ImpureFormula child : children){
+          result = bfmgr.and(result, child);
+        }
+        break;
+      case OR:
+        for (ImpureFormula child : children){
+          result = bfmgr.or(result, child);
+        }
+        break;
+      }
+      return result;
+    }
+
+    public boolean isPure() {
+      LinkedList<ImpureFormula> worklist = new LinkedList<>();
+      worklist.add(this);
+      while (!worklist.isEmpty()){
+        ImpureFormula form = worklist.pollFirst();
+        if (form.pureLeaf != null){
+          //Do nothing
+        } else if (form.impureLeaf != null){
+          return false;
+        } else {
+          for(ImpureFormula child : form.children){
+            worklist.add(child);
+          }
+        }
+      }
+      return true;
+    }
   }
 
   private class StateDescription{
     ImpureFormula phi;
     Graph pat;
 
-    void init(){
+    StateDescription(){
       phi = new ImpureFormula(bfmgr.makeBoolean(true));
       pat = Graph.emptyHeap();
     }
 
-    BooleanFormula purify(){
-      return null;
+    StateDescription(ImpureFormula phi, Graph pat){
+      this.phi = phi;
+      this.pat = pat;
     }
   }
 
@@ -128,7 +172,6 @@ public class ProveIt {
 
     void init(){
       StateDescription s = new StateDescription();
-      s.init();
       S.add(s);
     }
 
@@ -158,14 +201,49 @@ public class ProveIt {
     return suffixFormula;
   }
 
-  private Object purify(Set<Object> pHashSet, BooleanFormula phi, Graph pReach){
-    if (phi instanceof ImpureFormula) {
-      ImpureFormula impurePhi = (ImpureFormula)phi;
-      impurePhi.getFirstDerefPredicate();
-//TODO      phi_T = impurePhi.purify(pHashSet, phi, pReach);
-      return null;
+  private Graph weakest_entailment(Set<BooleanFormula> preds){
+    assert(false);
+    return null;
+  }
+
+  /**
+  * @return For every StateDescription pair,
+  * the formula is in a theory that describes only the program's data and
+  * the pattern is entailed by REACH
+  **/
+  private Set<StateDescription> purify(Set<BooleanFormula> ctx, ImpureFormula phi, Graph reach){
+    if (phi.isPure()) {
+      ImpureFormula impurePhi = phi;
+      EnhancedPredicate dp = impurePhi.getFirstDerefPredicate();
+
+
+      Set<StateDescription> sT; {
+      ImpureFormula phi_T = impurePhi.subDerefPredicate(dp, bfmgr.makeBoolean(true));
+      Set<BooleanFormula> t_ctx = new HashSet<>();
+      t_ctx.addAll(ctx);
+      t_ctx.add(bfmgr.equivalence(dp, bfmgr.makeBoolean(true)));
+      sT = purify(t_ctx, phi_T, reach);
+      }
+
+      Set<StateDescription> sF; {
+      ImpureFormula phi_F = impurePhi.subDerefPredicate(dp, bfmgr.makeBoolean(false));
+      Set<BooleanFormula> f_ctx = new HashSet<>();
+      f_ctx.addAll(ctx);
+      f_ctx.add(bfmgr.equivalence(dp, bfmgr.makeBoolean(false)));
+      sF = purify(f_ctx, phi_F, reach);
+      }
+
+      Set<StateDescription> result = sT;
+      result.addAll(sF);
+      return result;
     } else {
-      return null;
+      //phi has no dereference predicate
+      BooleanFormula phiPure = phi.getPureBF();
+      Graph pat_ctx = weakest_entailment(ctx);
+      Graph pat_user = SeparatorChecker.findReach(reach, pat_ctx);
+      Set<StateDescription> result = new HashSet<StateDescription>();
+      result.add(new StateDescription(phi, pat_user));
+      return result;
     }
   }
 
@@ -205,11 +283,9 @@ public class ProveIt {
           BooleanFormula itp = getItp(pre, upd, post);
 
           Graph reach = heapTransfer.post(edge, v, s.pat);
-//          pCases = purify(new HashSet<>(), itp, reach);
+          ImpureFormula itpImpure = new ImpureFormula(itp);
+          Set<StateDescription> pcases = purify(new HashSet<BooleanFormula>(), itpImpure, reach);
         }
-
-//        BooleanFormula interp = this.itpmgr.
-//        itpmgr.buildCounterexampleTrace(pFormulas);
 
       }
       pts.addLast(currInfo);
@@ -223,6 +299,7 @@ public class ProveIt {
     //TODO: pointer copy
     //TODO: load
     //TODO: store
+    assert(false);
     return null;
   }
 

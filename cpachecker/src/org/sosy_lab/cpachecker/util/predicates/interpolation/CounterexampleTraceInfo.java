@@ -97,6 +97,7 @@ public class CounterexampleTraceInfo {
      * @return a list of interpolants
      */
     public List<BooleanFormula> getInterpolants() {
+      System.out.println("[getInterpolants] " + isSpurious() + " "  + this.spurious);
       checkState(spurious);
       return interpolants;
     }
