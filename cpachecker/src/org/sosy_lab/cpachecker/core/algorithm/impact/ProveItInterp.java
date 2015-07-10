@@ -203,7 +203,7 @@ public class ProveItInterp {
 
     PointInfo(){
       F = new Footprint();
-      S = new HashSet<StateDescription>();
+      S = new HashSet<>();
     }
 
     void init(){
