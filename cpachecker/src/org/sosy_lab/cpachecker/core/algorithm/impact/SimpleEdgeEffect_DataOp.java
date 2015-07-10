@@ -24,6 +24,7 @@
 package org.sosy_lab.cpachecker.core.algorithm.impact;
 
 import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 
 public class SimpleEdgeEffect_DataOp extends SimpleEdgeEffect{
@@ -33,7 +34,7 @@ public class SimpleEdgeEffect_DataOp extends SimpleEdgeEffect{
   }
 
   @Override
-  public Footprint apply(Vertex pPrev, Footprint pF) {
+  public Footprint apply(BooleanFormulaManagerView pBfmgr, Vertex pPrev, Footprint pF) {
     return pF;
   }
 

@@ -68,7 +68,6 @@ public class ProveItInterp {
       assert(false);
       return result;
     }
-
   }
 
   private class ImpureFormula implements BooleanFormula{
@@ -407,7 +406,7 @@ public class ProveItInterp {
         System.out.println("prev info size is " + prevInfo.S.size());
         for (StateDescription s : prevInfo.S){
           try {
-            currInfo.F = transform.apply(prev, prevInfo.F);
+            currInfo.F = transform.apply(bfmgr, prev, prevInfo.F);
             BooleanFormula pre = prevInfo.restrict(s);
             BooleanFormula upd = semanticConstraint(edge);
             BooleanFormula post = suffixConstraint(path, v);

@@ -36,6 +36,11 @@ public class Footprint {
     terms = new HashSet<>();
   }
 
+  public Footprint(Footprint pre) {
+    this();
+    terms.addAll(pre.terms);
+  }
+
   public void addTerm(BooleanFormula term){
     terms.add(term);
   }

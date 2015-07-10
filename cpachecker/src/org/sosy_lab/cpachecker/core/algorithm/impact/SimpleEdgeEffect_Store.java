@@ -23,18 +23,35 @@
  */
 package org.sosy_lab.cpachecker.core.algorithm.impact;
 
+import org.sosy_lab.cpachecker.cfa.ast.c.CExpression;
+import org.sosy_lab.cpachecker.cfa.ast.c.CStatement;
 import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
+import org.sosy_lab.cpachecker.cfa.model.c.CStatementEdge;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 
 public class SimpleEdgeEffect_Store extends SimpleEdgeEffect{
 
-  public SimpleEdgeEffect_Store(CFAEdge pEdge) {
+  String dstVar;
+  String fieldName;
+
+  String srcVar;
+
+  public SimpleEdgeEffect_Store(CFAEdge pEdge, CExpression lhs, CExpression rhs) {
     super(pEdge);
+    CStatement stmt = ((CStatementEdge)pEdge).getStatement();
+    System.out.println("store stmt class " + stmt.getClass());
+    System.out.println("store is " + stmt);
+    if (stmt instanceof CExpression) {
+      assert(false);
+    }
   }
 
   @Override
-  public Footprint apply(Vertex pPrev, Footprint pF) {
-    return pF;
+  public Footprint apply(BooleanFormulaManagerView bfmgr, Vertex pPrev, Footprint pre) {
+    Dereference d = new Dereference(dstVar, fieldName);
+    Footprint post = new Footprint(pre);
+    post.addTerm(d);
+    return post;
   }
-
 }

@@ -23,23 +23,27 @@
  */
 package org.sosy_lab.cpachecker.core.algorithm.impact;
 
-import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
-import org.sosy_lab.cpachecker.cfa.model.CFAEdgeType;
+import org.sosy_lab.cpachecker.cfa.ast.c.CExpression;
+import org.sosy_lab.cpachecker.cfa.ast.c.CLeftHandSide;
+import org.sosy_lab.cpachecker.cfa.model.c.CStatementEdge;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.BooleanFormula;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 
 public class SimpleEdgeEffect_Load extends SimpleEdgeEffect{
+  String lhsVar;
+  String rhsVar;
 
-  public SimpleEdgeEffect_Load(CFAEdge pEdge) {
-    super(pEdge);
-    if (this.edge.getEdgeType() == CFAEdgeType.StatementEdge) {
-
-    }
+  public SimpleEdgeEffect_Load(CStatementEdge edge, CLeftHandSide pLeftHandSide, CExpression pRightHandSide) {
+    super(edge);
+    assert(false);
   }
 
   @Override
-  public Footprint apply(Vertex pPrev, Footprint pF) {
-
-        return pF;
-
+  public Footprint apply(BooleanFormulaManagerView bfmgr, Vertex pPrev, Footprint pre) {
+    BooleanFormula lhsTerm = bfmgr.makeVariable(lhsVar);
+    Footprint post = new Footprint(pre);
+    post.addTerm(lhsTerm);
+    return post;
   }
 }

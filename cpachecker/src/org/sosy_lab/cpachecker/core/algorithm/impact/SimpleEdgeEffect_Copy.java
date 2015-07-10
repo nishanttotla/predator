@@ -24,17 +24,22 @@
 package org.sosy_lab.cpachecker.core.algorithm.impact;
 
 import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 
 public class SimpleEdgeEffect_Copy extends SimpleEdgeEffect{
+  String varLhs;
+  String varRhs;
 
   public SimpleEdgeEffect_Copy(CFAEdge pEdge) {
     super(pEdge);
   }
 
   @Override
-  public Footprint apply(Vertex pPrev, Footprint pF) {
-    return pF;
+  public Footprint apply(BooleanFormulaManagerView bfmgr, Vertex pPrev, Footprint pre) {
+    Footprint post = new Footprint(pre);
+    post.terms.add(bfmgr.makeVariable(varLhs));
+    return post;
   }
 
 }

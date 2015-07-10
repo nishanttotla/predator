@@ -23,8 +23,13 @@
  */
 package org.sosy_lab.cpachecker.core.algorithm.impact;
 
+import org.sosy_lab.cpachecker.cfa.ast.c.CExpressionAssignmentStatement;
+import org.sosy_lab.cpachecker.cfa.ast.c.CFunctionCallAssignmentStatement;
+import org.sosy_lab.cpachecker.cfa.ast.c.CStatement;
 import org.sosy_lab.cpachecker.cfa.model.CFAEdge;
 import org.sosy_lab.cpachecker.cfa.model.CFAEdgeType;
+import org.sosy_lab.cpachecker.cfa.model.c.CStatementEdge;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 import proveit.heapgraph.Graph;
 
@@ -32,33 +37,22 @@ import proveit.heapgraph.Graph;
 
 public abstract class EdgeEffect {
 
-  enum OpType {LOAD, STORE, COPY, DATA}
+  enum OpType {LOAD, STORE, COPY, DATA, ALLOC}
   OpType opType;
 
 
   public static EdgeEffect create(CFAEdge pEdge){
     //TODO: check on the type (load, store, copy, data)
-    OpType type = checkType(pEdge);
-    if (type == OpType.LOAD){
-      return new SimpleEdgeEffect_Load(pEdge);
-    } else if (type == OpType.STORE){
-      return new SimpleEdgeEffect_Store(pEdge);
-    } else if (type == OpType.COPY){
-      return new SimpleEdgeEffect_Copy(pEdge);
-    } else if (type == OpType.DATA){
-      return new SimpleEdgeEffect_DataOp(pEdge);
-    } else {
-      return new SimpleEdgeEffect_Passthrough(pEdge);
-    }
-  }
-
-  private static OpType checkType(CFAEdge pEdge) {
     System.out.println("edge effect edge is " + pEdge.getClass());
     CFAEdgeType type = pEdge.getEdgeType();
     if (type == CFAEdgeType.AssumeEdge){
-      return null;
+      return new SimpleEdgeEffect_Passthrough(pEdge);
+    } else if (type == CFAEdgeType.BlankEdge){
+      return new SimpleEdgeEffect_Passthrough(pEdge);
     } else if (type == CFAEdgeType.DeclarationEdge){
-        return null;
+      return new SimpleEdgeEffect_Passthrough(pEdge);
+    } else if (type == CFAEdgeType.StatementEdge){
+      return createStmtEffect((CStatementEdge)pEdge);
     } else {
       System.out.println("unknown edge type " + type);
       assert(false);
@@ -66,12 +60,38 @@ public abstract class EdgeEffect {
     }
   }
 
-  public EdgeEffect() {
-  }
-
-  public Graph apply(Vertex v, Graph pPre) {
+  private static EdgeEffect createStmtEffect(CStatementEdge pEdge) {
+    System.out.println("[opTypeOfStmt] >>>");
+    CStatement stmt = pEdge.getStatement();
+    if (stmt instanceof CFunctionCallAssignmentStatement){
+      CFunctionCallAssignmentStatement funcAssg = (CFunctionCallAssignmentStatement)stmt;
+      String funcName = StmtUtil.getFunc(funcAssg.getRightHandSide());
+      if (funcName == "malloc"){ return new SimpleEdgeEffect_Alloc(pEdge); }
+      else { return null; }
+    } else if (stmt instanceof CExpressionAssignmentStatement){
+      CExpressionAssignmentStatement assg = (CExpressionAssignmentStatement)stmt;
+      if (StmtUtil.hasDeref(assg.getRightHandSide()) != null){
+        System.out.println("RHS DEREF!");
+        return new SimpleEdgeEffect_Load(pEdge, assg.getLeftHandSide(), assg.getRightHandSide());
+      } else if (StmtUtil.hasDeref(assg.getLeftHandSide()) != null) {
+        System.out.println("LHS DEREF!");
+        return new SimpleEdgeEffect_Store(pEdge, assg.getLeftHandSide(), assg.getRightHandSide());
+      } else {
+        return new SimpleEdgeEffect_DataOp(pEdge);
+      }
+    } else {
+      System.out.println("unknown stmt of class " + stmt.getClass());
+      assert(false);
+    }
     return null;
   }
 
-  public abstract Footprint apply(Vertex pPrev, Footprint pF);
+  public EdgeEffect() {
+  }
+
+  public Graph apply(Vertex v, Graph pre) {
+    return pre;
+  }
+
+  public abstract Footprint apply(BooleanFormulaManagerView pBfmgr, Vertex pPrev, Footprint pF);
 }
