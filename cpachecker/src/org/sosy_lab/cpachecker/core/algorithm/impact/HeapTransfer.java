@@ -41,7 +41,7 @@ import org.sosy_lab.cpachecker.cfa.model.c.CStatementEdge;
 import proveit.heapgraph.Graph;
 import proveit.heapgraph.HeapVar;
 
-public class HeapTransfer {
+class HeapTransfer {
   static int iter = 0;
 
   public Graph post(CFAEdge edge, Vertex v, Graph pre) {

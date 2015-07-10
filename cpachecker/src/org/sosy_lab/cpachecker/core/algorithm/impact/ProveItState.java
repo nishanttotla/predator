@@ -30,7 +30,6 @@ import org.sosy_lab.cpachecker.cfa.ast.c.CSimpleDeclaration;
 
 import proveit.heapgraph.Graph;
 import proveit.heapgraph.HeapVar;
-import proveit.heapgraph.Node;
 
 
 class ProveItState {
@@ -50,8 +49,8 @@ class ProveItState {
   public ProveItState alloc(CSimpleDeclaration dst){
     ProveItState succ = new ProveItState(this);
     HeapVar vIn = succ.g.findOrMakeVar(dst);
-    Node nIn = new Node();
-    succ.g.allocNode(vIn, nIn);
+//    Node nIn = new Node();
+//    succ.g.allocNode(vIn, nIn);
     return succ;
   }
 

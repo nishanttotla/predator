@@ -23,15 +23,23 @@
  */
 package proveit.heapgraph;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.sosy_lab.cpachecker.cfa.ast.c.CSimpleDeclaration;
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
 
 
 public class Graph {
   public enum ThreeVal {FALSE, MAYBE, TRUE}
+
+  private HashMap<String, Node> nodeById;
 
   public Set<Node> nodes;
   public HashMap<LabeledEdge, ThreeVal> edges; // E: N x Fields x N -> B3
@@ -43,9 +51,117 @@ public class Graph {
     this.heapVarLabeling = new HeapVarLabeling();
   }
 
-  public static Graph fromDot(String filename){
+  public static Graph fromDot(BooleanFormulaManagerView bfmgr, String filename){
+    Graph result = new Graph();
+    result.nodeById = new HashMap<>();
+
+    try{
+    Scanner s = new Scanner(new File(filename));
+
+    //Discard header
+    s.nextLine();
+    s.nextLine();
+    s.nextLine();
+
+    while(s.hasNextLine()){
+      String line = s.nextLine().trim();
+      //Directives
+      if (line.indexOf("label") == 0){
+
+      } else if (line.indexOf("clusterrank") == 0){
+      } else if (line.indexOf("labelloc") == 0){
+      } else if (line.indexOf("}") == 0){
+      }
+      //Nodes and Edges
+      else {
+        String[] pieces = line.split("[");
+        String header = pieces[0];
+        if (header.indexOf("->") >= 0){
+          result.dotEdge(bfmgr, line);
+        } else {
+          result.dotNode(bfmgr, line);
+        }
+      }
+    }
+
     //TODO
-    return null;
+    } catch (Exception e){
+      e.printStackTrace(System.err);
+    }
+    return result;
+  }
+
+  private void dotEdge(BooleanFormulaManagerView bfmgr, String text){
+
+    String annotation;
+    String head;
+    {
+    head = text.substring(0, text.indexOf("["));
+    String annotationChunk = text.substring(text.indexOf("[") + 1);
+    int annotationEndIdx = annotationChunk.indexOf("]");
+    annotation = annotationChunk.substring(0, annotationEndIdx);
+    annotation = annotation.trim();
+    }
+
+    String[] headPieces = head.split("->");
+    String srcId = headPieces[0].replaceAll("\"", "").trim();
+    String dstId = headPieces[0].replaceAll("\"", "").trim();
+
+    String predicate;
+    {
+    String MARKER = "predicate=";
+    int idxStart = annotation.indexOf(MARKER);
+    int idxEnd = annotation.indexOf(" ", idxStart);
+    predicate = annotation.substring(idxStart, idxEnd);
+    }
+
+    ThreeVal val;
+    {
+    String MARKER = "truth=";
+    int idxStart = annotation.indexOf(MARKER);
+    int idxEnd = annotation.indexOf(" ", idxStart);
+    String truthVal = annotation.substring(idxStart, idxEnd);
+    if (truthVal.equals("TRUE")){
+      val = ThreeVal.TRUE;
+    } else if (truthVal.equals("FALSE")){
+      val = ThreeVal.FALSE;
+    } else {
+      val = ThreeVal.MAYBE;
+    }
+    }
+
+
+
+    Node src = this.nodeById.get(srcId);
+    Node dst = this.nodeById.get(dstId);
+    Edge edge = new Edge(src, dst, val);
+
+  }
+
+  private void dotNode(BooleanFormulaManagerView bfmgr, String text){
+    String[] pieces = text.split("\"");
+    String nodeName = pieces[1];
+
+
+
+    String annotation;
+    {
+    String annotationChunk = text.substring(text.indexOf("[") + 1);
+    int annotationEndIdx = annotationChunk.indexOf("]");
+    annotation = annotationChunk.substring(0, annotationEndIdx);
+    annotation = annotation.trim();
+    }
+
+    String MARKER = "predicate=";
+    String predicate;
+    {
+    int idxStart = annotation.indexOf(MARKER);
+    int idxEnd = annotation.indexOf(" ", idxStart);
+    predicate = annotation.substring(idxStart, idxEnd);
+    }
+
+    Node node = new Node(bfmgr.makeVariable(predicate));
+    this.nodes.add(node);
   }
 
   public static Graph universalHeap(){
@@ -73,6 +189,17 @@ public class Graph {
     for (LabeledEdge e : edges.keySet()){
       if (e.src == aN){
         result.add(e.dst);
+      }
+    }
+    return result;
+  }
+
+  public Set<LabeledEdge> outgoingEdges(Node nn){
+    Set<LabeledEdge> result = new HashSet<>();
+    for (Entry<LabeledEdge, ThreeVal> entry : this.edges.entrySet()){
+      LabeledEdge le = entry.getKey();
+      if (le.src == nn) {
+        result.add(le);
       }
     }
     return result;
@@ -141,5 +268,35 @@ public class Graph {
 
   public HeapVar findOrMakeVar(CSimpleDeclaration pDst) {
     return heapVarLabeling.findOrMakeVar(pDst);
+  }
+
+  public LinkedList<Node> getRoots() {
+    LinkedList<Node> markedRoots = new LinkedList<Node>();
+    LinkedList<Node> unmarkedRoots = new LinkedList<Node>();
+    for (Node node : this.nodes){
+      if (node.root){
+        markedRoots.add(node);
+      }
+    }
+    if (markedRoots.isEmpty()){
+      return markedRoots;
+    }
+
+    for (Node node : this.nodes){
+      boolean hasIncoming = false;
+      for (Entry<LabeledEdge, ThreeVal> edge : this.edges.entrySet()){
+        LabeledEdge key = edge.getKey();
+        ThreeVal val = edge.getValue();
+        if (val != ThreeVal.FALSE){
+          if(key.dst.equals(node)){
+            hasIncoming = true;
+          }
+        }
+      }
+      if (!hasIncoming){
+        unmarkedRoots.add(node);
+      }
+    }
+    return unmarkedRoots;
   }
 }

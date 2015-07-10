@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import proveit.heapgraph.Graph.ThreeVal;
+
 /**
  * Basically just a wrapper around a set of edges
  */
@@ -38,7 +40,7 @@ public class Relation implements Iterable<Edge>{
   }
 
   void add(Node from, Node to){
-    edges.add(new Edge(from, to, Edge.ThreeVal.DEFINITE));
+    edges.add(new Edge(from, to, ThreeVal.TRUE));
   }
 
   public int size() {

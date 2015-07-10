@@ -24,14 +24,21 @@
 package proveit.heapgraph;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.sosy_lab.cpachecker.core.algorithm.impact.HeapOracle;
 import org.sosy_lab.cpachecker.util.predicates.Solver;
 
 
 public class SeparatorChecker {
   Solver solver;
+  HeapOracle oracle;
+
+  public SeparatorChecker(HeapOracle oracle){
+    this.oracle = oracle;
+  }
 
   LinkedList<Relation> simulationFixpoint(Graph a, Graph b){
     LinkedList<Relation> relationChain = new LinkedList<>();
@@ -109,8 +116,28 @@ public class SeparatorChecker {
     return chain;
   }
 
-  public static Graph findReach(Graph g, Graph separator){
-    return null;
+  public Graph DFS(LinkedList<Relation> chain, Graph g){
+     LinkedList<Node> roots = g.getRoots();
+
+     Graph result = new Graph();
+     for (Node root : roots){
+       LinkedList<Node> visited = new LinkedList<Node>();
+       LinkedList<Node> frontier = new LinkedList<Node>();
+       frontier.push(root);
+       while(frontier.isEmpty()){
+         Node node = frontier.poll();
+         Set<Node> succs = g.succNodes(node);
+       }
+     }
+
+     return result;
+  }
+
+  public Graph findReach(Graph g, Graph separator){
+    LinkedList<Relation> chain = entailedBy(g, separator);
+    Relation first = chain.getFirst();
+    Graph counterExample = new Graph();
+    return counterExample;
   }
 
   boolean separates(Graph hMinus, Graph hPlus, Graph u){
@@ -127,5 +154,9 @@ public class SeparatorChecker {
       return false;
     }
     return true;
+  }
+
+  public Graph findErr(List pPath, Graph pSeparator) {
+    return null;
   }
 }

@@ -50,9 +50,11 @@ public class ProveItInterp {
   private BooleanFormulaManagerView bfmgr;
   private InterpolationManager itpmgr;
   private Solver solver;
+  private SeparatorChecker user;
 
   public ProveItInterp(BooleanFormulaManagerView bfmgr, InterpolationManager itpmgr, Solver solver){
-    oracle = new HeapOracle();
+    oracle = new HeapOracle(bfmgr, ".");
+    user = new SeparatorChecker(oracle);
 
     this.bfmgr = bfmgr;
     this.itpmgr = itpmgr;
@@ -293,7 +295,7 @@ public class ProveItInterp {
     //TODO: this is an over-approximation
     Graph g = new Graph();
     for (Set<BooleanFormula> may_equal1 : may_eq_classes){
-      Node n = new Node();
+      Node n = new Node(bfmgr.makeBoolean(true));
       n.predicate = conjunction(may_equal1);
       for (Set<BooleanFormula> may_equal2 : may_eq_classes){
         if (may_equal1 == may_equal2){
@@ -354,7 +356,7 @@ public class ProveItInterp {
       //phi has no dereference predicate
       BooleanFormula phiPure = phi.getPureBF();
       Graph pat_ctx = weakest_entailment(ctx);
-      Graph pat_user = SeparatorChecker.findReach(reach, pat_ctx);
+      Graph pat_user = user.findReach(reach, pat_ctx);
       Set<StateDescription> result = new HashSet<StateDescription>();
       result.add(new StateDescription(phi, pat_user));
       return result;
@@ -416,6 +418,7 @@ public class ProveItInterp {
             ImpureFormula itpImpure = new ImpureFormula(itp);
 
             Set<StateDescription> pcases = purify(new HashSet<BooleanFormula>(), itpImpure, reach);
+
           } catch(Exception e){
             e.printStackTrace();
           }

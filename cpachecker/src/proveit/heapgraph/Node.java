@@ -28,4 +28,13 @@ import org.sosy_lab.cpachecker.util.predicates.interfaces.BooleanFormula;
 public class Node {
   public BooleanFormula predicate;
   boolean root;
+
+  public Node(BooleanFormula predicate){
+    this.predicate = predicate;
+  }
+
+  public Node(BooleanFormula predicate, boolean isRoot){
+    this(predicate);
+    this.root = isRoot;
+  }
 }

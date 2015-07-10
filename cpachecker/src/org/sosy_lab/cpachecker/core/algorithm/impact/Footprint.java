@@ -41,6 +41,11 @@ public class Footprint {
     terms.addAll(pre.terms);
   }
 
+  public Footprint(Footprint pre, BooleanFormula term){
+    this(pre);
+    terms.add(term);
+  }
+
   public void addTerm(BooleanFormula term){
     terms.add(term);
   }

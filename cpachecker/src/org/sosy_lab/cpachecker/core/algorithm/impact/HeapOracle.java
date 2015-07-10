@@ -25,13 +25,24 @@ package org.sosy_lab.cpachecker.core.algorithm.impact;
 
 import java.util.Set;
 
+import org.sosy_lab.cpachecker.util.predicates.interfaces.view.BooleanFormulaManagerView;
+
 import proveit.heapgraph.Graph;
 
 
 public class HeapOracle {
+  int idx = 0;
+  String dirName;
+  BooleanFormulaManagerView bfmgr;
+
+  public HeapOracle(BooleanFormulaManagerView bfmgr, String dirName) {
+    this.dirName = dirName;
+  }
 
   public Graph separator(Set<Graph> pHPlus, Set<Graph> pHMinus) {
-    return null;
+    String filename = String.format("%s/graph%03d.dot", dirName, idx);
+    idx++;
+    return Graph.fromDot(bfmgr, filename);
   }
 
 }

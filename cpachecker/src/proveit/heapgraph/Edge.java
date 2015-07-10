@@ -23,9 +23,10 @@
  */
 package proveit.heapgraph;
 
+import proveit.heapgraph.Graph.ThreeVal;
+
 
 public class Edge {
-  enum ThreeVal { DEFINITE, DEFINITE_NOT, MAYBE}
 
   public ThreeVal val;
   public Node src;
