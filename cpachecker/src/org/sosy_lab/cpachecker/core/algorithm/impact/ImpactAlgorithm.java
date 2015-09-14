@@ -145,7 +145,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
     cpa = pCpa;
 
     System.out.println("[ImpactAlgorithm.ImpactAlgorithm] >>>");
-
+    System.out.println("In impact algo!");
 
     heapTransfer = new HeapTransfer();
     solver = Solver.create(config, pLogger, pShutdownNotifier);
@@ -170,7 +170,6 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   public AlgorithmStatus run(ReachedSet pReachedSet) throws CPAException, InterruptedException {
     System.out.println("[ImpactAlgorithm.run] >>>");
     System.out.println("INITIAL reached set is " + pReachedSet);
-    System.out.println("^^^^^");
 
     int i = 0 ;
 
@@ -187,7 +186,7 @@ public class ImpactAlgorithm implements Algorithm, StatisticsProvider {
   }
 
   private void expand(Vertex v, ReachedSet reached) throws CPAException, InterruptedException {
-    System.out.println("[expand] >>>");
+    System.out.println("[expand] " + v.getId() + ">>>");
     expandTime.start();
     try {
       assert v.isLeaf() && !v.isCovered();

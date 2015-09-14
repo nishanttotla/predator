@@ -773,7 +773,7 @@ public final class InterpolationManager {
         satCheckTimer.stop();
       }
 
-      System.out.println("Counterexample trace is" + (spurious ? "infeasible" : "feasible"));
+      System.out.println("Counterexample trace is " + (spurious ? "infeasible" : "feasible"));
 
       logger.log(Level.FINEST, "Counterexample trace is", (spurious ? "infeasible" : "feasible"));
 
@@ -781,19 +781,30 @@ public final class InterpolationManager {
       // Get either interpolants or error path information
       CounterexampleTraceInfo info;
       if (spurious) {
-
+        System.out.println("computeInterpolants? " + computeInterpolants);
         if (computeInterpolants) {
           final List<BooleanFormula> interpolants = getInterpolants(this, formulasWithStatesAndGroupdIds);
+          {
+          System.out.println("Getting a list of " + interpolants.size() + " interpolants");
+          int i = 1;
+          for (BooleanFormula itp : interpolants) {
+            System.out.println("For step " + (i++) +  " got: interpolant " + itp);
+          }
+          }
+
+
           if (logger.wouldBeLogged(Level.ALL)) {
             int i = 1;
             for (BooleanFormula itp : interpolants) {
               logger.log(Level.ALL, "For step", i++, "got:", "interpolant", itp);
+
             }
           }
 
           info = CounterexampleTraceInfo.infeasible(interpolants);
         } else {
           info = CounterexampleTraceInfo.infeasibleNoItp();
+          System.out.println("CounterexampleTraceInfo " + info);
         }
 
       } else {

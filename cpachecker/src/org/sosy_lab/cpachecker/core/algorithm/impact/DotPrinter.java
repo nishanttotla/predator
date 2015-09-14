@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import org.sosy_lab.cpachecker.core.interfaces.AbstractState;
 import org.sosy_lab.cpachecker.core.reachedset.ReachedSet;
 
 import proveit.heapgraph.Graph;
@@ -41,28 +40,9 @@ public class DotPrinter {
         throws Exception
   {
     PrintStream dot = new PrintStream(new FileOutputStream(name, false));
-    dot.println("digraph \"" + name + "\" {");
-    dot.printf("\tlabel=<<FONT POINT-SIZE=\"18\">%s</FONT>>;\n", name);
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      //System.out.println("boolean formula type " + v.getStateFormula().getClass());
+    DotPrinterHelper dph = new DotPrinterHelper(dot, name);
+    dph.go(reached);
 
-
-      dot.printf("\t\"%d\" [shape=box, label=\"%s\"];\n",
-          v.getId(),
-          v.getId() + "\\n" + v.getStateFormula());
-    }
-    for (AbstractState as : reached){
-      Vertex v = (Vertex)as;
-      if (v.hasParent()){
-        Vertex parent = v.getParent();
-        dot.printf("\t\"%d\" -> \"%d\" [];\n", parent.getId(), v.getId());
-      }
-    }
-
-    dot.printf("}\n");
-    dot.flush();
-    dot.close();
     return;
   }
 
@@ -72,7 +52,7 @@ public class DotPrinter {
     PrintStream dot = new PrintStream(new FileOutputStream(name, false));
     dot.println("digraph \"" + name + "\" {");
     dot.printf("\tlabel=<<FONT POINT-SIZE=\"18\">%s</FONT>>;\n", name);
-    HashMap<Node, Integer> nodeID = new HashMap<Node, Integer>();
+    HashMap<Node, Integer> nodeID = new HashMap<>();
 
     if (graph == null){
       dot.printf("}\n");
@@ -99,6 +79,4 @@ public class DotPrinter {
     dot.flush();
     dot.close();
   }
-
-
 }
